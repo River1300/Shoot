@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     // [5] Fire Update : 필요 속성(총알 발사 시간, 현재 발사 시간)
     public float maxShotDelay;
     public float curShotDelay;
+    // [6] Power : 필요 속성(파워를 수치화 할 변수)
+    public int power;
 
     void Awake()
     {
@@ -58,11 +60,38 @@ public class Player : MonoBehaviour
         // [5] Fire Update : 3) 아직 발사 시간에 도달하지 못하였다면 총알은 발사되지 않는다.
         if(curShotDelay < maxShotDelay) return;
 
-        // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
-        GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
-        // [4] Bullet : 4) 객체가 만들어 졌다면 해당 객체로 부터 Rigidbody2D 컴포넌트를 받아와 발사한다.
-        Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
-        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+        // [6] Power : 1) switch문을 활용하여 파워에 따라 각기 다른 방식으로 총알을 발사한다.
+        switch(power)
+        {
+            case 1:
+                // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
+                GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+                // [4] Bullet : 4) 객체가 만들어 졌다면 해당 객체로 부터 Rigidbody2D 컴포넌트를 받아와 발사한다.
+                Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+                rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                break;
+            case 2:
+                // [6] Power : 2) 파워가 2단계일 때는 총알을 두 발씩 발사한다. 이때 총알의 위치가 곂치지 않도록 생성할 때 위치를 조정해 준다.
+                GameObject bulletL = Instantiate(bulletObjA, transform.position + Vector3.left * 0.1f, transform.rotation);
+                GameObject bulletR = Instantiate(bulletObjA, transform.position + Vector3.right * 0.1f, transform.rotation);
+                Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
+                Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
+                rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                break;
+            case 3:
+                // [6] Power : 3) 파워가 3단계일 때는 총알 두발에 + 큰 총알을 발사한다. 객체를 생성할 때 다른 프리팹을 사용한다.
+                GameObject bulletLL = Instantiate(bulletObjA, transform.position + Vector3.left * 0.35f, transform.rotation);
+                GameObject bulletCC = Instantiate(bulletObjB, transform.position, transform.rotation);
+                GameObject bulletRR = Instantiate(bulletObjA, transform.position + Vector3.right * 0.35f, transform.rotation);
+                Rigidbody2D rigidLL = bulletLL.GetComponent<Rigidbody2D>();
+                Rigidbody2D rigidCC = bulletCC.GetComponent<Rigidbody2D>();
+                Rigidbody2D rigidRR = bulletRR.GetComponent<Rigidbody2D>();
+                rigidLL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                rigidCC.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                rigidRR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+                break;   
+        }
 
         // [5] Fire Update : 4) 총알을 발사 하였다면 총알 발사 시간을 초기화 한다.
         curShotDelay = 0;
