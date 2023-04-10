@@ -12,6 +12,9 @@ public class Player : MonoBehaviour
     public bool isTouchRight;
     // [3] Animation : 필요 속성(애니매이터)
     Animator anim;
+    // [4] Bullet : 필요 속성(프리팹을 담을 게임 오브젝트)
+    public GameObject bulletObjA;
+    public GameObject bulletObjB;
 
     void Awake()
     {
@@ -19,6 +22,13 @@ public class Player : MonoBehaviour
     }
 
     void Update()
+    {   
+        Move();
+        Fire();
+    }
+
+    // [4] Bullet : 1) Update() 함수 정리를 위해 이동 로직을 캡슐화
+    void Move()
     {   // [1] Player Move : 1) 수직/수평 입력값을 받아서 저장한 뒤 방향으로 사용
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
@@ -35,6 +45,15 @@ public class Player : MonoBehaviour
 
         // [3] Animation : 1) 수평방향 키 버튼이 눌렸다면? 수평방향 키 버튼이 때였다면? 수평 값을 전달한다.
         if(Input.GetButtonDown("Horizontal") || Input.GetButtonUp("Horizontal")) anim.SetInteger("Input", (int)h);
+    }
+
+    // [4] Bullet : 2) 발사 함수에서 발사 로직을 작성한다.
+    void Fire()
+    {   // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
+        GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+        // [4] Bullet : 4) 객체가 만들어 졌다면 해당 객체로 부터 Rigidbody2D 컴포넌트를 받아와 발사한다.
+        Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+        rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
     }
 
     // [2] Boarder : 1) 경계선에 닿았다면 bool 값을 true로 배정한다.
