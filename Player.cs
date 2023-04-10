@@ -10,6 +10,13 @@ public class Player : MonoBehaviour
     public bool isTouchBottom;
     public bool isTouchLeft;
     public bool isTouchRight;
+    // [3] Animation : 필요 속성(애니매이터)
+    Animator anim;
+
+    void Awake()
+    {
+        anim = GetComponent<Animator>();
+    }
 
     void Update()
     {   // [1] Player Move : 1) 수직/수평 입력값을 받아서 저장한 뒤 방향으로 사용
@@ -25,6 +32,9 @@ public class Player : MonoBehaviour
         Vector3 nextPos = new Vector3(h, v, 0) * speed * Time.deltaTime;
         // [1] Player Move : 3) 현재 위치에 미래의 위치를 더하여 이동
         transform.position = curPos + nextPos;
+
+        // [3] Animation : 1) 수평방향 키 버튼이 눌렸다면? 수평방향 키 버튼이 때였다면? 수평 값을 전달한다.
+        if(Input.GetButtonDown("Horizontal") || Input.GetButtonUp("Horizontal")) anim.SetInteger("Input", (int)h);
     }
 
     // [2] Boarder : 1) 경계선에 닿았다면 bool 값을 true로 배정한다.
