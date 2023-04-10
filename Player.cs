@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     // [4] Bullet : 필요 속성(프리팹을 담을 게임 오브젝트)
     public GameObject bulletObjA;
     public GameObject bulletObjB;
+    // [5] Fire Update : 필요 속성(총알 발사 시간, 현재 발사 시간)
+    public float maxShotDelay;
+    public float curShotDelay;
 
     void Awake()
     {
@@ -25,6 +28,7 @@ public class Player : MonoBehaviour
     {   
         Move();
         Fire();
+        Reload();
     }
 
     // [4] Bullet : 1) Update() 함수 정리를 위해 이동 로직을 캡슐화
@@ -49,11 +53,25 @@ public class Player : MonoBehaviour
 
     // [4] Bullet : 2) 발사 함수에서 발사 로직을 작성한다.
     void Fire()
-    {   // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
+    {   // [5] Fire Update : 1) 사용자가 발사 버튼을 누르지 않았다면 총알은 발사되지 않는다.
+        if(!Input.GetButton("Fire1")) return;
+        // [5] Fire Update : 3) 아직 발사 시간에 도달하지 못하였다면 총알은 발사되지 않는다.
+        if(curShotDelay < maxShotDelay) return;
+
+        // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
         GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
         // [4] Bullet : 4) 객체가 만들어 졌다면 해당 객체로 부터 Rigidbody2D 컴포넌트를 받아와 발사한다.
         Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
         rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
+
+        // [5] Fire Update : 4) 총알을 발사 하였다면 총알 발사 시간을 초기화 한다.
+        curShotDelay = 0;
+    }
+
+    // [5] Fire Update : 2) 매 프래임 마다 총알 발사 시간의 값이 증가한다.
+    void Reload()
+    {
+        curShotDelay += Time.deltaTime;
     }
 
     // [2] Boarder : 1) 경계선에 닿았다면 bool 값을 true로 배정한다.
