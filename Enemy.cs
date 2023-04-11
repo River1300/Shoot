@@ -53,7 +53,7 @@ public class Enemy : MonoBehaviour
             // [10] Enemy Bullet : 7) 방향 값에서도 위치 조정이 필요하다.
             Vector3 dirVecL = player.transform.position - (transform.position + Vector3.left * 0.3f);
             Vector3 dirVecR = player.transform.position - (transform.position + Vector3.right * 0.3f);
-            // [10] Enemy Bullet : 8) 벡터의 크기를 일반화 한다.
+            // [10] Enemy Bullet : 8) 벡터의 크기를 일반화 한다. -> Player
             rigidL.AddForce(dirVecL.normalized * 2, ForceMode2D.Impulse);
             rigidR.AddForce(dirVecR.normalized * 2, ForceMode2D.Impulse);
         }

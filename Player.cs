@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     public float curShotDelay;
     // [6] Power : 필요 속성(파워를 수치화 할 변수)
     public int power;
+    // [11] Player Hit : 3) 플레이어가 비활성화 되기전에 게임 매니저의 함수를 호출해야 한다.
+    public GameManager manager;
 
     void Awake()
     {
@@ -123,6 +125,12 @@ public class Player : MonoBehaviour
                     isTouchRight = true;
                     break;
             }
+        }
+        else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
+        {   // [11] Player Hit : 4) 게임 매니저의 부활 함수를 호출한다.
+            manager.RespawnPlayer();
+            // [11] Player Hit : 1) 플레이어가 적, 적의 총알에 충돌하면 비활성화 된다. -> GameManager
+            gameObject.SetActive(false);
         }
     }
     // [2] Boarder : 3) 플레이어가 경계선을 벗어 났다면 bool 에 false를 배정하여 이동을 정상화 한다.

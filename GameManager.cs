@@ -56,4 +56,15 @@ public class GameManager : MonoBehaviour
             rigid.velocity = new Vector2(0, enemyLogic.speed * (-1));
         }
     }
+
+    // [11] Player Hit : 2) 비활성화된 플레이어를 딜레이를 두고 다시 활성화 시킨다. -> Player
+    public void RespawnPlayer()
+    {
+        Invoke("RespawnPlayerExe", 2);
+    }
+    void RespawnPlayerExe()
+    {
+        player.transform.position = Vector3.down * 3.5f;
+        player.SetActive(true);
+    }
 }
