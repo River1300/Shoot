@@ -43,6 +43,8 @@ public class Enemy : MonoBehaviour
         {   // [7] Enemy : 11) OnHit()함수에 데미지를 매개변수로 전달하기 위해 Bullet 스크립트에 속성을 추가해 준다. -> Bullet
             Bullet bullet = other.gameObject.GetComponent<Bullet>();
             OnHit(bullet.dmg);
+            // [7] Enemy : 13) 총을 관통형이 아니기 때문에 제거한다. -> GameManager
+            Destroy(other.gameObject);
         }
     }
 }
