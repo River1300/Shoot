@@ -8,11 +8,61 @@ public class Enemy : MonoBehaviour
     public int health;
     public Sprite[] sprites;
     SpriteRenderer spriteRenderer;
+    // [10] Enemy Bullet : 필요 속성(총알 공장, 발사 딜레이 + 이름 + 플레이어)
+    public GameObject bulletObjA;
+    public GameObject bulletObjB;
+    public float maxShotDelay;
+    public float curShotDelay;
+    public string enemyName;
+    public GameObject player;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
         spriteRenderer = GetComponent<SpriteRenderer>();
         // [9] Spawn Upgrade : 2) 사이드에서 탄생한 적은 아래로만 내려가서는 않되기 때문에 생성과 함께 속도의 초기화는 이제 필요 없다. -> GameManager
+    }
+
+    // [10] Enemy Bullet : 1) 발사 함수와 재장선 함수를 매 프레임마다 호출한다.
+    void Update()
+    {   
+        Fire();
+        Reload();
+    }
+
+    void Fire()
+    {   
+        if(curShotDelay < maxShotDelay) return;
+
+        // [10] Enemy Bullet : 2) 총알은 S타입의 적과 L타입의 적만이 발사 한다. -> GameManager
+        if(enemyName == "S")
+        {
+            GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+            // [10] Enemy Bullet : 5) 방향 벡터에 플레이어로 향하는 방향을 저장한다.
+            Vector3 dirVec = player.transform.position - transform.position;
+            rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
+        }
+        else if(enemyName == "L")
+        {   // [10] Enemy Bullet : 6) L타입은 두발의 다른 총알을 발사 한다.
+            GameObject bulletL = Instantiate(bulletObjB, transform.position + Vector3.left * 0.3f, transform.rotation);
+            GameObject bulletR = Instantiate(bulletObjB, transform.position + Vector3.right * 0.3f, transform.rotation);
+
+            Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
+            Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
+            // [10] Enemy Bullet : 7) 방향 값에서도 위치 조정이 필요하다.
+            Vector3 dirVecL = player.transform.position - (transform.position + Vector3.left * 0.3f);
+            Vector3 dirVecR = player.transform.position - (transform.position + Vector3.right * 0.3f);
+            // [10] Enemy Bullet : 8) 벡터의 크기를 일반화 한다.
+            rigidL.AddForce(dirVecL.normalized * 2, ForceMode2D.Impulse);
+            rigidR.AddForce(dirVecR.normalized * 2, ForceMode2D.Impulse);
+        }
+
+        curShotDelay = 0;
+    }
+    void Reload()
+    {
+        curShotDelay += Time.deltaTime;
     }
 
     // [7] Enemy : 2) 적이 플레이어 총알에 피격 당했을 때 호출되는 함수를 만든다. 매개변수로 데미지를 받는다.
