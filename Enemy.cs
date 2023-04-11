@@ -8,13 +8,11 @@ public class Enemy : MonoBehaviour
     public int health;
     public Sprite[] sprites;
     SpriteRenderer spriteRenderer;
-    Rigidbody2D rigid;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
         spriteRenderer = GetComponent<SpriteRenderer>();
-        rigid = GetComponent<Rigidbody2D>();
-        rigid.velocity = Vector2.down * speed;
+        // [9] Spawn Upgrade : 2) 사이드에서 탄생한 적은 아래로만 내려가서는 않되기 때문에 생성과 함께 속도의 초기화는 이제 필요 없다. -> GameManager
     }
 
     // [7] Enemy : 2) 적이 플레이어 총알에 피격 당했을 때 호출되는 함수를 만든다. 매개변수로 데미지를 받는다.
