@@ -25,6 +25,8 @@ public class Player : MonoBehaviour
     // [12] UI Setting : 필요 속성(플레이어의 목숨, 점수) -> Enemy
     public int life;
     public int score;
+    // [14] OnHit Bug : 필요 속성(현재 피격 상태인지 확인할 bool)
+    public bool isHit;
 
     void Awake()
     {
@@ -130,7 +132,12 @@ public class Player : MonoBehaviour
             }
         }
         else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
-        {   // [13] UI On : 3) 플레이어의 목숨 값을 -1 하고 게임 매니저의 목숨 이미지 함수를 호출한다. -> GameManager
+        {   // [14] OnHit Bug : 1) 현재 피격된 상태라면 아래 로직을 실행하지 않는다.
+            if(isHit) return;
+            // [14] OnHit Bug : 2) 현재 피격된 상태 전이라면 아래 로직을 실행하고 true를 준다. -> GameManager
+            isHit = true;
+            
+            // [13] UI On : 3) 플레이어의 목숨 값을 -1 하고 게임 매니저의 목숨 이미지 함수를 호출한다. -> GameManager
             life--;
             // [13] UI On : 5) 피격될 때 게임 매니저에게 목숨아이콘을 하나 없에 달라고 요청한다. -> GameManager
             manager.UpdateLifeIcon(life);

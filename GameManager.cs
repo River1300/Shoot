@@ -89,6 +89,10 @@ public class GameManager : MonoBehaviour
     {
         player.transform.position = Vector3.down * 3.5f;
         player.SetActive(true);
+
+        // [14] OnHit Bug : 3) 플레이어 로직으로 부터 bool 속성을 받아와 false를 준다. -> Item
+        Player playerLogic = player.GetComponent<Player>();
+        playerLogic.isHit = false;
     }
 
     // [13] UI On : 6) 게임 오버 오브젝트를 활성화 시킨다. -> Player
@@ -97,7 +101,7 @@ public class GameManager : MonoBehaviour
         gameOverSet.SetActive(true);
     }
 
-    // [13] UI On : 8) 재시작 버튼을 누르면 씬을 새로 불러온다.
+    // [13] UI On : 8) 재시작 버튼을 누르면 씬을 새로 불러온다. -> Player
     public void GameRetry()
     {
         SceneManager.LoadScene(0);
