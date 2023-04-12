@@ -22,6 +22,9 @@ public class Player : MonoBehaviour
     public int power;
     // [11] Player Hit : 3) 플레이어가 비활성화 되기전에 게임 매니저의 함수를 호출해야 한다.
     public GameManager manager;
+    // [12] UI Setting : 필요 속성(플레이어의 목숨, 점수) -> Enemy
+    public int life;
+    public int score;
 
     void Awake()
     {
@@ -127,10 +130,23 @@ public class Player : MonoBehaviour
             }
         }
         else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
-        {   // [11] Player Hit : 4) 게임 매니저의 부활 함수를 호출한다.
-            manager.RespawnPlayer();
-            // [11] Player Hit : 1) 플레이어가 적, 적의 총알에 충돌하면 비활성화 된다. -> GameManager
+        {   // [13] UI On : 3) 플레이어의 목숨 값을 -1 하고 게임 매니저의 목숨 이미지 함수를 호출한다. -> GameManager
+            life--;
+            // [13] UI On : 5) 피격될 때 게임 매니저에게 목숨아이콘을 하나 없에 달라고 요청한다. -> GameManager
+            manager.UpdateLifeIcon(life);
+
+            if (life <= 0)
+            {   // [13] UI On : 7) 만약 목숨이 0이 된다면 게임 오버 화면을 띄운다. -> GameManager
+                manager.GameOver();
+            }
+            else
+            {
+                // [11] Player Hit : 4) 게임 매니저의 부활 함수를 호출한다.
+                manager.RespawnPlayer();
+            }
+            // [11] Player Hit : 1) 플레이어가 적, 적의 총알에 충돌하면 비활성화 된다. 충돌한 오브젝트는 제거된다. -> GameManager
             gameObject.SetActive(false);
+            Destroy(other.gameObject);
         }
     }
     // [2] Boarder : 3) 플레이어가 경계선을 벗어 났다면 bool 에 false를 배정하여 이동을 정상화 한다.

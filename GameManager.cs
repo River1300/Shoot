@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {   // [8] Enemy Spawn : 필요 속성(적 공장, 소환 위치, 소환 딜레이, 소환 시간)
@@ -10,6 +12,10 @@ public class GameManager : MonoBehaviour
     public float curSpawnDelay;
     // [10] Enemy Bullet : 3) 프리팹은 객체를 받아올 수 없으므로 게임 매니저에서 인스턴스화 될 때 플레이어 오브젝트를 넘겨준다.
     public GameObject player;
+    // [13] UI On : 필요 속성(Text UI, Image UI, Over set UI)
+    public Text scoreText;
+    public Image[] lifeImage;
+    public GameObject gameOverSet;
 
     void Update()
     {   // [8] Enemy Spawn : 1) 적을 소환하기 위해 소환 시간은 매 프레임마다 증가한다.
@@ -23,6 +29,10 @@ public class GameManager : MonoBehaviour
             maxSpawnDelay = Random.Range(0.5f, 3f);
         }
 
+        // [13] UI On : 2) 매 프레임마다 플레이어의 점수를 출력한다.
+        //            : 문자열 포맷으로 구분자를 넣어 text에 집어 넣는다. -> Player
+        Player playerLogic = player.GetComponent<Player>();
+        scoreText.text = string.Format("{0:n0}", playerLogic.score);
     }
 
     void SpawnEnemy()
@@ -57,6 +67,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // [13] UI On : 4) 플레이어의 현재 목숨을 Image UI로 그리는 함수를 만든다. -> Player
+    public void UpdateLifeIcon(int life)
+    {
+        for(int index = 0; index < 3; index++)
+        {
+            lifeImage[index].color = new Color(1, 1, 1, 0);
+        }
+        for(int index = 0; index < life; index++)
+        {
+            lifeImage[index].color = new Color(1, 1, 1, 1);
+        }
+    }
+
     // [11] Player Hit : 2) 비활성화된 플레이어를 딜레이를 두고 다시 활성화 시킨다. -> Player
     public void RespawnPlayer()
     {
@@ -66,5 +89,17 @@ public class GameManager : MonoBehaviour
     {
         player.transform.position = Vector3.down * 3.5f;
         player.SetActive(true);
+    }
+
+    // [13] UI On : 6) 게임 오버 오브젝트를 활성화 시킨다. -> Player
+    public void GameOver()
+    {
+        gameOverSet.SetActive(true);
+    }
+
+    // [13] UI On : 8) 재시작 버튼을 누르면 씬을 새로 불러온다.
+    public void GameRetry()
+    {
+        SceneManager.LoadScene(0);
     }
 }

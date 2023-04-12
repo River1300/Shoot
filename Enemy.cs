@@ -15,6 +15,8 @@ public class Enemy : MonoBehaviour
     public float curShotDelay;
     public string enemyName;
     public GameObject player;
+    // [13] UI On : 필요 속성(적의 점수)
+    public int enemyScore;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
@@ -74,7 +76,12 @@ public class Enemy : MonoBehaviour
         // [7] Enemy : 7) Invoke()를 통해 스프라이트를 되돌린다.
         Invoke("ReturnSprite", 0.2f);
         // [7] Enemy : 4) 만약 체력이 0 이하로 떨어지면 오브젝트는 파괴된다.
-        if (health <= 0) Destroy(gameObject);
+        if (health <= 0) 
+        {   // [13] UI On : 1) 플레이어의 로직에 접근하여 점수를 + 연산한다. -> GameManager
+            Player playerLogic = player.GetComponent<Player>();
+            playerLogic.score += enemyScore;
+            Destroy(gameObject);
+        }
     }
     // [7] Enemy : 6) 스프라이트를 원 상태로 되돌리는 함수를 만든다.
     void ReturnSprite()
