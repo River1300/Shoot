@@ -31,6 +31,10 @@ public class Player : MonoBehaviour
     public int maxPower;
     // [17] BoomEffect : 필요 속성(폭탄 이펙트를 받을 오브젝트)
     public GameObject boomEffect;
+    // [18] Input.Boom : 필요 속성(현재 폭탄 갯수, 최대 폭탄 갯수, 폭탄 사용 중? bool)
+    public int boom;
+    public int maxBoom;
+    public bool isBoomTime;
 
     void Awake()
     {
@@ -41,6 +45,7 @@ public class Player : MonoBehaviour
     {   
         Move();
         Fire();
+        Boom();
         Reload();
     }
 
@@ -108,6 +113,33 @@ public class Player : MonoBehaviour
         curShotDelay = 0;
     }
 
+    // [18] Input.Boom : 1) 폭탄 발사 함수를 만든다.
+    void Boom()
+    {   // [18] Input.Boom : 2) 발사 버튼, 발사 중, 갯수가 0 에 대한 제어문을 만든다.
+        if(!Input.GetButton("Fire2") || isBoomTime || boom == 0) return;
+        // [18] Input.Boom : 3) 사용 했으므로 폭탄 갯수를 줄인다. 그리고 폭탄 사용 중 임을 체크
+        boom--;
+        isBoomTime = true;
+        // [18] Input.Boom : 9) 폭탄을 새로 그린다.
+        manager.UpdateBoomIcon(boom);
+        // [18] Input.Boom : 4) switch 문의 폭탄 기능을 이쪽으로 옮긴다.
+        boomEffect.SetActive(true);
+        Invoke("OffBoomEffect", 4f);
+
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        for (int index = 0; index < enemies.Length; index++)
+        {
+            Enemy enemyLogic = enemies[index].GetComponent<Enemy>();
+            enemyLogic.OnHit(1000);
+        }
+
+        GameObject[] bullets = GameObject.FindGameObjectsWithTag("EnemyBullet");
+        for (int index = 0; index < bullets.Length; index++)
+        {
+            Destroy(bullets[index]);
+        }
+    }
+
     // [5] Fire Update : 2) 매 프래임 마다 총알 발사 시간의 값이 증가한다.
     void Reload()
     {
@@ -116,7 +148,9 @@ public class Player : MonoBehaviour
 
     // [17] BoomEffect : 6) 폭탄 이펙트를 비활성화 시키는 함수를 만든다.
     void OffBoomEffect()
-    {
+    {   // [18] Input.Boom : 6) 폭탄 사용 중이 아님을 체크 한다. -> GameManager
+        isBoomTime = false;
+
         boomEffect.SetActive(false);
     }
 
@@ -185,24 +219,16 @@ public class Player : MonoBehaviour
                     }
                 break;
                 case "Boom":
-                    // [17] BoomEffect : 1) 폭탄 이펙트를 활성화 시킨다.
-                    boomEffect.SetActive(true);
-                    // [17] BoomEffect : 7) 폭탄 이펙트를 비활성화 시킨다.
-                    Invoke("OffBoomEffect", 4f);
-                    // [17] BoomEffect : 2) 씬에 등록된 모든 적을 배열로 받는다.
-                    GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-                    // [17] BoomEffect : 3) 모든 적에게 폭탄 데미지를 준다.
-                    for (int index = 0; index < enemies.Length; index++)
+                    // [18] Input.Boom : 5) 폭탄 아이템을 먹으면 폭탄 갯수가 증가한다.
+                    if(boom == maxBoom)
                     {
-                        Enemy enemyLogic = enemies[index].GetComponent<Enemy>();
-                        enemyLogic.OnHit(1000);
+                        score += 50;
                     }
-                    // [17] BoomEffect : 4) 모든 적 총알을 배열로 받는다.
-                    GameObject[] bullets = GameObject.FindGameObjectsWithTag("EnemyBullet");
-                    // [17] BoomEffect : 5) 모든 적 총알을 제거한다.
-                    for (int index = 0; index < bullets.Length; index++)
+                    else
                     {
-                        Destroy(bullets[index]);
+                        boom++;
+                        // [18] Input.Boom : 8) 폭탄을 새로 그린다.
+                        manager.UpdateBoomIcon(boom);
                     }
                 break;
             }

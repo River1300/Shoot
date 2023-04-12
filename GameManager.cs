@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     public Text scoreText;
     public Image[] lifeImage;
     public GameObject gameOverSet;
+    // [18] Input.Boom : 필요 속성(폭탄 Image UI)
+    public Image[] boomImage;
 
     void Update()
     {   // [8] Enemy Spawn : 1) 적을 소환하기 위해 소환 시간은 매 프레임마다 증가한다.
@@ -77,6 +79,19 @@ public class GameManager : MonoBehaviour
         for(int index = 0; index < life; index++)
         {
             lifeImage[index].color = new Color(1, 1, 1, 1);
+        }
+    }
+
+    // [18] Input.Boom : 7) 폭탄을 그린다. -> Player
+    public void UpdateBoomIcon(int boom)
+    {
+        for(int index = 0; index < 3; index++)
+        {
+            boomImage[index].color = new Color(1, 1, 1, 0);
+        }
+        for(int index = 0; index < boom; index++)
+        {
+            boomImage[index].color = new Color(1, 1, 1, 1);
         }
     }
 
