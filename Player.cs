@@ -27,6 +27,10 @@ public class Player : MonoBehaviour
     public int score;
     // [14] OnHit Bug : 필요 속성(현재 피격 상태인지 확인할 bool)
     public bool isHit;
+    // [16] Item : 필요 속성(최대 파워 값)
+    public int maxPower;
+    // [17] BoomEffect : 필요 속성(폭탄 이펙트를 받을 오브젝트)
+    public GameObject boomEffect;
 
     void Awake()
     {
@@ -110,6 +114,12 @@ public class Player : MonoBehaviour
         curShotDelay += Time.deltaTime;
     }
 
+    // [17] BoomEffect : 6) 폭탄 이펙트를 비활성화 시키는 함수를 만든다.
+    void OffBoomEffect()
+    {
+        boomEffect.SetActive(false);
+    }
+
     // [2] Boarder : 1) 경계선에 닿았다면 bool 값을 true로 배정한다.
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -153,6 +163,50 @@ public class Player : MonoBehaviour
             }
             // [11] Player Hit : 1) 플레이어가 적, 적의 총알에 충돌하면 비활성화 된다. 충돌한 오브젝트는 제거된다. -> GameManager
             gameObject.SetActive(false);
+            Destroy(other.gameObject);
+        }
+        else if(other.gameObject.tag == "Item")
+        {   // [16] Item : 1) 충돌한 아이템 오브젝트로 부터 Item 로직을 받아 이름을 확인한다.
+            Item item = other.gameObject.GetComponent<Item>();
+            // [16] Item : 2) switch 문에서 이름에 따라 각기 다른 로직을 작성한다.
+            switch(item.type)
+            {
+                case "Coin":
+                    score += 100;
+                break;
+                case "Power":
+                    if(power == maxPower)
+                    {
+                        score += 50;
+                    }
+                    else
+                    {
+                        power++;
+                    }
+                break;
+                case "Boom":
+                    // [17] BoomEffect : 1) 폭탄 이펙트를 활성화 시킨다.
+                    boomEffect.SetActive(true);
+                    // [17] BoomEffect : 7) 폭탄 이펙트를 비활성화 시킨다.
+                    Invoke("OffBoomEffect", 4f);
+                    // [17] BoomEffect : 2) 씬에 등록된 모든 적을 배열로 받는다.
+                    GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+                    // [17] BoomEffect : 3) 모든 적에게 폭탄 데미지를 준다.
+                    for (int index = 0; index < enemies.Length; index++)
+                    {
+                        Enemy enemyLogic = enemies[index].GetComponent<Enemy>();
+                        enemyLogic.OnHit(1000);
+                    }
+                    // [17] BoomEffect : 4) 모든 적 총알을 배열로 받는다.
+                    GameObject[] bullets = GameObject.FindGameObjectsWithTag("EnemyBullet");
+                    // [17] BoomEffect : 5) 모든 적 총알을 제거한다.
+                    for (int index = 0; index < bullets.Length; index++)
+                    {
+                        Destroy(bullets[index]);
+                    }
+                break;
+            }
+            // [17] BoomEffect : 8) 충돌한 아이템은 삭제한다.
             Destroy(other.gameObject);
         }
     }

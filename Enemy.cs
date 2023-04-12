@@ -68,7 +68,7 @@ public class Enemy : MonoBehaviour
     }
 
     // [7] Enemy : 2) 적이 플레이어 총알에 피격 당했을 때 호출되는 함수를 만든다. 매개변수로 데미지를 받는다.
-    void OnHit(int dmg)
+    public void OnHit(int dmg)
     {   // [7] Enemy : 3) 현재 체력에서 데미지를 빼기 연산한다.
         health -= dmg;
         // [7] Enemy : 5) 피격 당했다면 스프라이트 렌더러를 이용하여 스프라이트를 교체한다.

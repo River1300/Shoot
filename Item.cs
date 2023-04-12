@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Item : MonoBehaviour
-{   // [15] Item Set : 필요 속성(아이템 이름, 리지드바디)
+{   // [15] Item Set : 필요 속성(아이템 이름, 리지드바디) -> Player
     public string type;
     Rigidbody2D rigid;
 
