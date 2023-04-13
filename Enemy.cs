@@ -90,7 +90,7 @@ public class Enemy : MonoBehaviour
 
             // [19] Item Drop : 1) 아이템이 나올 확률을 지정하기 위해 랜덤 값을 받는다.
             int ran = Random.Range(0, 11);
-            // [19] Item Drop : 2) 확률에 따라서 아이템을 드랍한다.
+            // [19] Item Drop : 2) 확률에 따라서 아이템을 드랍한다. -> Background
             if(ran < 3){
                 Debug.Log("NoDrop");
             }else if(ran < 5){
