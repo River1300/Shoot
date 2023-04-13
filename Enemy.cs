@@ -17,6 +17,10 @@ public class Enemy : MonoBehaviour
     public GameObject player;
     // [13] UI On : 필요 속성(적의 점수)
     public int enemyScore;
+    // [19] Item Drop : 필요 속성(아이템 공장)
+    public GameObject itemCoin;
+    public GameObject itemPower;
+    public GameObject itemBoom;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
@@ -69,7 +73,10 @@ public class Enemy : MonoBehaviour
 
     // [7] Enemy : 2) 적이 플레이어 총알에 피격 당했을 때 호출되는 함수를 만든다. 매개변수로 데미지를 받는다.
     public void OnHit(int dmg)
-    {   // [7] Enemy : 3) 현재 체력에서 데미지를 빼기 연산한다.
+    {   // [19] Item Drop : 3) 이미 체력이 0보다 작다면 반환한다.
+        if(health <= 0) return;
+        
+        // [7] Enemy : 3) 현재 체력에서 데미지를 빼기 연산한다.
         health -= dmg;
         // [7] Enemy : 5) 피격 당했다면 스프라이트 렌더러를 이용하여 스프라이트를 교체한다.
         spriteRenderer.sprite = sprites[1];
@@ -80,6 +87,19 @@ public class Enemy : MonoBehaviour
         {   // [13] UI On : 1) 플레이어의 로직에 접근하여 점수를 + 연산한다. -> GameManager
             Player playerLogic = player.GetComponent<Player>();
             playerLogic.score += enemyScore;
+
+            // [19] Item Drop : 1) 아이템이 나올 확률을 지정하기 위해 랜덤 값을 받는다.
+            int ran = Random.Range(0, 11);
+            // [19] Item Drop : 2) 확률에 따라서 아이템을 드랍한다.
+            if(ran < 3){
+                Debug.Log("NoDrop");
+            }else if(ran < 5){
+                Instantiate(itemCoin, transform.position, itemCoin.transform.rotation);
+            }else if(ran < 8){
+                Instantiate(itemPower, transform.position, itemPower.transform.rotation);
+            }else if(ran < 10){
+                Instantiate(itemBoom, transform.position, itemBoom.transform.rotation);
+            }
             Destroy(gameObject);
         }
     }

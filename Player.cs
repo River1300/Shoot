@@ -120,7 +120,7 @@ public class Player : MonoBehaviour
         // [18] Input.Boom : 3) 사용 했으므로 폭탄 갯수를 줄인다. 그리고 폭탄 사용 중 임을 체크
         boom--;
         isBoomTime = true;
-        // [18] Input.Boom : 9) 폭탄을 새로 그린다.
+        // [18] Input.Boom : 9) 폭탄을 새로 그린다. -> Enemy
         manager.UpdateBoomIcon(boom);
         // [18] Input.Boom : 4) switch 문의 폭탄 기능을 이쪽으로 옮긴다.
         boomEffect.SetActive(true);
