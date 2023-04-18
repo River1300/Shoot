@@ -6,7 +6,8 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {   // [8] Enemy Spawn : 필요 속성(적 공장, 소환 위치, 소환 딜레이, 소환 시간)
-    public GameObject[] enemyObjs;
+    // [23] Object pool : 4) 이제 공장에서 바로 만들지 않고 오브젝트 매니저에 문자열로 전달할 것이기 때문에 문자열 배열로 바꾼다.
+    public string[] enemyObjs;
     public Transform[] spawnPoints;
     public float maxSpawnDelay;
     public float curSpawnDelay;
@@ -18,6 +19,13 @@ public class GameManager : MonoBehaviour
     public GameObject gameOverSet;
     // [18] Input.Boom : 필요 속성(폭탄 Image UI)
     public Image[] boomImage;
+    // [23] Object pool : 필요 속성(오브젝트 매니저 변수)
+    public ObjectManager objectManager;
+
+    void Awake()
+    {
+        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+    }
 
     void Update()
     {   // [8] Enemy Spawn : 1) 적을 소환하기 위해 소환 시간은 매 프레임마다 증가한다.
@@ -44,13 +52,18 @@ public class GameManager : MonoBehaviour
         // [9] Spawn Upgrade : 1) 사이드 위치를 추가하여 랜덤 위치값을 조정한다. -> Enemy
         int ranPoint = Random.Range(0, 9);
         // [9] Spawn Upgrade : 3) 적을 생성할 때 저장하고 리지드바디를 받아와 방향을 지정해 준다.
-        GameObject enemy = Instantiate(enemyObjs[ranEnemy], spawnPoints[ranPoint].position, spawnPoints[ranPoint].rotation);
+        // [23] Object pool : 5) 오브젝트 매니저의 함수를 호출한다. -> Player
+        GameObject enemy = objectManager.MakeObj(enemyObjs[ranEnemy]);
+        enemy.transform.position = spawnPoints[ranPoint].position;
+
         Rigidbody2D rigid = enemy.GetComponent<Rigidbody2D>();
         // [9] Spawn Upgrade : 4) 속도에는 속력이 필요함으로 Enemy 스크립트도 받아온다.
         Enemy enemyLogic = enemy.GetComponent<Enemy>();
 
         // [10] Enemy Bullet : 4) 인스턴스화가 되면서 Enemy 컴포넌트를 변수로 받아오게되는데 이때 player를 넘겨준다. -> Enemy
         enemyLogic.player = player;
+        // [23] Object pool : 7) 게임 매니저에 있는 오브젝트 매니저를 적 스크립트에 배정해 준다. -> Enemy
+        enemyLogic.objectManager = objectManager;
 
         // [9] Spawn Upgrade : 5) ranPoint에 따라서 방향과 속도를 지정해준다. -> Enemy
         if(ranPoint == 5 || ranPoint == 6)

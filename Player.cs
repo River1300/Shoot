@@ -35,6 +35,8 @@ public class Player : MonoBehaviour
     public int boom;
     public int maxBoom;
     public bool isBoomTime;
+    // [23] Object pool : 필요 속성(오브젝트 매니저)
+    public ObjectManager objectManager;
 
     void Awake()
     {
@@ -78,18 +80,22 @@ public class Player : MonoBehaviour
 
         // [6] Power : 1) switch문을 활용하여 파워에 따라 각기 다른 방식으로 총알을 발사한다.
         switch(power)
-        {
+        {   // [23] Object pool : 6) 객체를 받고 위치를 조정해 준다. -> Enemy
             case 1:
                 // [4] Bullet : 3) 먼저 총알A부터 발사해 본다. 공장에서 객체를 만든다.
-                GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+                GameObject bullet = objectManager.MakeObj("PlayerBulletA");
+                bullet.transform.position = transform.position;
                 // [4] Bullet : 4) 객체가 만들어 졌다면 해당 객체로 부터 Rigidbody2D 컴포넌트를 받아와 발사한다.
                 Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
                 rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
             case 2:
                 // [6] Power : 2) 파워가 2단계일 때는 총알을 두 발씩 발사한다. 이때 총알의 위치가 곂치지 않도록 생성할 때 위치를 조정해 준다.
-                GameObject bulletL = Instantiate(bulletObjA, transform.position + Vector3.left * 0.1f, transform.rotation);
-                GameObject bulletR = Instantiate(bulletObjA, transform.position + Vector3.right * 0.1f, transform.rotation);
+                GameObject bulletL = objectManager.MakeObj("PlayerBulletA");
+                bulletL.transform.position = transform.position + Vector3.left * 0.1f;
+                GameObject bulletR = objectManager.MakeObj("PlayerBulletA");
+                bulletR.transform.position = transform.position + Vector3.right * 0.1f;
+                
                 Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
@@ -97,9 +103,13 @@ public class Player : MonoBehaviour
                 break;
             case 3:
                 // [6] Power : 3) 파워가 3단계일 때는 총알 두발에 + 큰 총알을 발사한다. 객체를 생성할 때 다른 프리팹을 사용한다.
-                GameObject bulletLL = Instantiate(bulletObjA, transform.position + Vector3.left * 0.35f, transform.rotation);
-                GameObject bulletCC = Instantiate(bulletObjB, transform.position, transform.rotation);
-                GameObject bulletRR = Instantiate(bulletObjA, transform.position + Vector3.right * 0.35f, transform.rotation);
+                GameObject bulletLL = objectManager.MakeObj("PlayerBulletA");
+                bulletLL.transform.position = transform.position + Vector3.left * 0.35f;
+                GameObject bulletCC = objectManager.MakeObj("PlayerBulletB");
+                bulletCC.transform.position = transform.position;
+                GameObject bulletRR = objectManager.MakeObj("PlayerBulletA");
+                bulletRR.transform.position = transform.position + Vector3.right * 0.35f;
+
                 Rigidbody2D rigidLL = bulletLL.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidCC = bulletCC.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidRR = bulletRR.GetComponent<Rigidbody2D>();
@@ -126,17 +136,50 @@ public class Player : MonoBehaviour
         boomEffect.SetActive(true);
         Invoke("OffBoomEffect", 4f);
 
-        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
-        for (int index = 0; index < enemies.Length; index++)
-        {
-            Enemy enemyLogic = enemies[index].GetComponent<Enemy>();
-            enemyLogic.OnHit(1000);
+        // [23] Object pool : 13) 배열로 적 객채를 모두 받아온다.
+        GameObject[] enemyS = objectManager.GetPool("EnemyS");
+        GameObject[] enemyM = objectManager.GetPool("EnemyM");
+        GameObject[] enemyL = objectManager.GetPool("EnemyL");
+        for (int index = 0; index < enemyS.Length; index++)
+        {   // [23] Object pool : 14) 활성화된 객체에게만 데미지를 준다.
+            if(enemyS[index].activeSelf)
+            {
+                Enemy enemyLogic = enemyS[index].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
         }
-
-        GameObject[] bullets = GameObject.FindGameObjectsWithTag("EnemyBullet");
-        for (int index = 0; index < bullets.Length; index++)
+        for (int index = 0; index < enemyM.Length; index++)
         {
-            Destroy(bullets[index]);
+            if(enemyM[index].activeSelf)
+            {
+                Enemy enemyLogic = enemyM[index].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        for (int index = 0; index < enemyL.Length; index++)
+        {
+            if(enemyL[index].activeSelf)
+            {
+                Enemy enemyLogic = enemyL[index].GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        // [23] Object pool : 15) 적 총알도 같은 방식으로 진행한다.
+        GameObject[] bulletA = objectManager.GetPool("EnemyBulletA");
+        GameObject[] bulletB = objectManager.GetPool("EnemyBulletB");
+        for (int index = 0; index < bulletA.Length; index++)
+        {
+            if(bulletA[index].activeSelf)
+            {
+                bulletA[index].SetActive(false);
+            }
+        }
+        for (int index = 0; index < bulletB.Length; index++)
+        {
+            if(bulletB[index].activeSelf)
+            {
+                bulletB[index].SetActive(false);
+            }
         }
     }
 
@@ -197,7 +240,7 @@ public class Player : MonoBehaviour
             }
             // [11] Player Hit : 1) 플레이어가 적, 적의 총알에 충돌하면 비활성화 된다. 충돌한 오브젝트는 제거된다. -> GameManager
             gameObject.SetActive(false);
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
         else if(other.gameObject.tag == "Item")
         {   // [16] Item : 1) 충돌한 아이템 오브젝트로 부터 Item 로직을 받아 이름을 확인한다.
@@ -233,7 +276,7 @@ public class Player : MonoBehaviour
                 break;
             }
             // [17] BoomEffect : 8) 충돌한 아이템은 삭제한다.
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
     }
     // [2] Boarder : 3) 플레이어가 경계선을 벗어 났다면 bool 에 false를 배정하여 이동을 정상화 한다.

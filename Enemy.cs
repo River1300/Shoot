@@ -21,11 +21,30 @@ public class Enemy : MonoBehaviour
     public GameObject itemCoin;
     public GameObject itemPower;
     public GameObject itemBoom;
+    // [23] Object pool : 필요 속성(오브젝트 매니저)
+    public ObjectManager objectManager;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
         spriteRenderer = GetComponent<SpriteRenderer>();
         // [9] Spawn Upgrade : 2) 사이드에서 탄생한 적은 아래로만 내려가서는 않되기 때문에 생성과 함께 속도의 초기화는 이제 필요 없다. -> GameManager
+    }
+
+    // [23] Object pool : 11) 적이 활성화 될 때마다 체력을 초기화 한다. -> ObjectManager
+    void OnEnable()
+    {
+        switch(enemyName)
+        {
+            case "S":
+                health = 3;
+                break;
+            case "M":
+                health = 5;
+                break;
+            case "L":
+                health = 10;
+                break;
+        }
     }
 
     // [10] Enemy Bullet : 1) 발사 함수와 재장선 함수를 매 프레임마다 호출한다.
@@ -40,9 +59,12 @@ public class Enemy : MonoBehaviour
         if(curShotDelay < maxShotDelay) return;
 
         // [10] Enemy Bullet : 2) 총알은 S타입의 적과 L타입의 적만이 발사 한다. -> GameManager
+        // [23] Object pool : 7) 적의 총알을 오브젝트 매니저에게서 받아온다. -> GameManager
         if(enemyName == "S")
         {
-            GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+            GameObject bullet = objectManager.MakeObj("EnemyBulletA");
+            bullet.transform.position = transform.position;
+
             Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
 
             // [10] Enemy Bullet : 5) 방향 벡터에 플레이어로 향하는 방향을 저장한다.
@@ -51,8 +73,10 @@ public class Enemy : MonoBehaviour
         }
         else if(enemyName == "L")
         {   // [10] Enemy Bullet : 6) L타입은 두발의 다른 총알을 발사 한다.
-            GameObject bulletL = Instantiate(bulletObjB, transform.position + Vector3.left * 0.3f, transform.rotation);
-            GameObject bulletR = Instantiate(bulletObjB, transform.position + Vector3.right * 0.3f, transform.rotation);
+            GameObject bulletL = objectManager.MakeObj("EnemyBulletB");
+            bulletL.transform.position = transform.position + Vector3.left * 0.3f;
+            GameObject bulletR = objectManager.MakeObj("EnemyBulletB");
+            bulletR.transform.position = transform.position + Vector3.right * 0.3f;
 
             Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
             Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
@@ -91,16 +115,22 @@ public class Enemy : MonoBehaviour
             // [19] Item Drop : 1) 아이템이 나올 확률을 지정하기 위해 랜덤 값을 받는다.
             int ran = Random.Range(0, 11);
             // [19] Item Drop : 2) 확률에 따라서 아이템을 드랍한다. -> Background
+            // [23] Object pool : 8) 아이템 객체를 불러온다.
             if(ran < 3){
                 Debug.Log("NoDrop");
             }else if(ran < 5){
-                Instantiate(itemCoin, transform.position, itemCoin.transform.rotation);
+                GameObject ItemCoin = objectManager.MakeObj("ItemCoin");
+                ItemCoin.transform.position = transform.position;
             }else if(ran < 8){
-                Instantiate(itemPower, transform.position, itemPower.transform.rotation);
+                GameObject ItemPower = objectManager.MakeObj("ItemPower");
+                ItemPower.transform.position = transform.position;
             }else if(ran < 10){
-                Instantiate(itemBoom, transform.position, itemBoom.transform.rotation);
+                GameObject ItemBoom = objectManager.MakeObj("ItemBoom");
+                ItemBoom.transform.position = transform.position;
             }
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            // [23] Object pool : 9) 적 객체가 비활성화 될 때 방향값을 초기화 시킨다. -> Item
+            transform.rotation = Quaternion.identity;
         }
     }
     // [7] Enemy : 6) 스프라이트를 원 상태로 되돌리는 함수를 만든다.
@@ -112,14 +142,18 @@ public class Enemy : MonoBehaviour
     // [7] Enemy : 8) 다른 콜라이더와 충돌할 때 호출되는 함수를 만든다.
     void OnTriggerEnter2D(Collider2D other)
     {   // [7] Enemy : 9) 충돌한 콜라이더가 총알 경계선이라면?
-        if(other.gameObject.tag == "BoarderBullet") Destroy(gameObject);
+        if(other.gameObject.tag == "BoarderBullet")
+        {
+            gameObject.SetActive(false);
+            transform.rotation = Quaternion.identity;
+        }
         // [7] Enemy : 10) 충돌한 콜라이더가 플레이어 총알이라면?
         if(other.gameObject.tag == "PlayerBullet")
         {   // [7] Enemy : 11) OnHit()함수에 데미지를 매개변수로 전달하기 위해 Bullet 스크립트에 속성을 추가해 준다. -> Bullet
             Bullet bullet = other.gameObject.GetComponent<Bullet>();
             OnHit(bullet.dmg);
             // [7] Enemy : 13) 총을 관통형이 아니기 때문에 제거한다. -> GameManager
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
     }
 }
