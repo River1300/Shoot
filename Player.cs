@@ -164,7 +164,7 @@ public class Player : MonoBehaviour
                 enemyLogic.OnHit(1000);
             }
         }
-        // [23] Object pool : 15) 적 총알도 같은 방식으로 진행한다.
+        // [23] Object pool : 15) 적 총알도 같은 방식으로 진행한다. -> GameManager
         GameObject[] bulletA = objectManager.GetPool("EnemyBulletA");
         GameObject[] bulletB = objectManager.GetPool("EnemyBulletB");
         for (int index = 0; index < bulletA.Length; index++)

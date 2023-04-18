@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+// [25] File Read : 1) 파일을 읽기 위한 라이브러리 추가
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {   // [8] Enemy Spawn : 필요 속성(적 공장, 소환 위치, 소환 딜레이, 소환 시간)
@@ -21,10 +23,38 @@ public class GameManager : MonoBehaviour
     public Image[] boomImage;
     // [23] Object pool : 필요 속성(오브젝트 매니저 변수)
     public ObjectManager objectManager;
+    // [24] File : 필요 속성(구조체 리스트, 리스트 인덱스, 플래그)
+    public List<Spawn> spawnList;
+    public int spawnIndex;
+    public bool spawnEnd;
 
     void Awake()
     {
+        spawnList = new List<Spawn>();
         enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+    }
+
+    // [24] File : 1) 파일을 읽는 함수를 만든다.
+    void ReadSpawnFile()
+    {   // [24] File : 2) 읽기 전, 초기화 작업을 실행한다.
+        spawnList.Clear();
+        spawnIndex = 0;
+        spawnEnd = false;
+
+        // [25] File Read : 2) 메모장을 읽기 위한 변수를 준비한다.
+        TextAsset textFile = Resources.Load("Stage 1") as TextAsset;
+        StringReader stringReader = new StringReader(textFile.text);
+
+        // [25] File Read : 3) 파일을 한 줄씩 읽는다.
+        string line = stringReader.ReadLine();
+
+        // [25] File Read : 4) 읽은 데이터를 구조체에 저장한다.
+        Spawn spawnData = new Spawn();
+        spawnData.delay = float.Parse(line.Split(',')[0]);
+        spawnData.type = line.Split(',')[1];
+        spawnData.point = int.Parse(line.Split(',')[2]);
+        // [25] File Read : 5) 저장한 구조체 데이터를 리스트에 넣는다.
+        spawnList.Add(spawnData);
     }
 
     void Update()

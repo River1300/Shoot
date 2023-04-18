@@ -36,7 +36,7 @@ public class Enemy : MonoBehaviour
         switch(enemyName)
         {
             case "S":
-                health = 3;
+                health = 1;
                 break;
             case "M":
                 health = 5;
