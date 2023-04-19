@@ -32,6 +32,9 @@ public class GameManager : MonoBehaviour
     {
         spawnList = new List<Spawn>();
         enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+
+        // [26] File End : 4) 게임이 시작될 때 스테이지 파일을 읽도록 한다.
+        ReadSpawnFile();
     }
 
     // [24] File : 1) 파일을 읽는 함수를 만든다.
@@ -45,16 +48,28 @@ public class GameManager : MonoBehaviour
         TextAsset textFile = Resources.Load("Stage 1") as TextAsset;
         StringReader stringReader = new StringReader(textFile.text);
 
-        // [25] File Read : 3) 파일을 한 줄씩 읽는다.
-        string line = stringReader.ReadLine();
+        // [26] File End : 1) 파일을 모두 읽을 때 까지 반복한다.
+        while(stringReader != null)
+        {
+            // [25] File Read : 3) 파일을 한 줄씩 읽는다.
+            string line = stringReader.ReadLine();
+            Debug.Log(line);
 
-        // [25] File Read : 4) 읽은 데이터를 구조체에 저장한다.
-        Spawn spawnData = new Spawn();
-        spawnData.delay = float.Parse(line.Split(',')[0]);
-        spawnData.type = line.Split(',')[1];
-        spawnData.point = int.Parse(line.Split(',')[2]);
-        // [25] File Read : 5) 저장한 구조체 데이터를 리스트에 넣는다.
-        spawnList.Add(spawnData);
+            if(line == null) break;
+
+            // [25] File Read : 4) 읽은 데이터를 구조체에 저장한다.
+            Spawn spawnData = new Spawn();
+            spawnData.delay = float.Parse(line.Split(',')[0]);
+            spawnData.type = line.Split(',')[1];
+            spawnData.point = int.Parse(line.Split(',')[2]);
+            // [25] File Read : 5) 저장한 구조체 데이터를 리스트에 넣는다.
+            spawnList.Add(spawnData);
+        }
+
+        // [26] File End : 2) 모든 파일을 읽었다면 파일을 닫는다.
+        stringReader.Close();
+        // [26] File End : 3) 가장 먼저 출현하는 적의 시간을 리스트에 저장된 최초 시간으로 배정한다.
+        maxSpawnDelay = spawnList[0].delay;
     }
 
     void Update()
