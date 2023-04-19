@@ -144,7 +144,7 @@ public class GameManager : MonoBehaviour
             spawnEnd = true;
             return;
         }
-        // [27] Enemy File Spawn : 5) 인덱스를 증가 시킨 뒤에 다음 소환 시간을 배정한다.
+        // [27] Enemy File Spawn : 5) 인덱스를 증가 시킨 뒤에 다음 소환 시간을 배정한다. -> Follower
         maxSpawnDelay = spawnList[spawnIndex].delay;
     }
 

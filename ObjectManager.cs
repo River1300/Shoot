@@ -14,6 +14,7 @@ public class ObjectManager : MonoBehaviour
     public GameObject playerBulletBPrefab;
     public GameObject enemyBulletAPrefab;
     public GameObject enemyBulletBPrefab;
+    public GameObject followerBulletPrefab;
     GameObject[] enemyS;
     GameObject[] enemyM;
     GameObject[] enemyL;
@@ -24,6 +25,7 @@ public class ObjectManager : MonoBehaviour
     GameObject[] playerBulletB;
     GameObject[] enemyBulletA;
     GameObject[] enemyBulletB;
+    GameObject[] followerBullet;
     // [23] Object pool : 필요 속성(임시 객체 저장소)
     GameObject[] targetPool;
 
@@ -40,6 +42,7 @@ public class ObjectManager : MonoBehaviour
         playerBulletB = new GameObject[100];
         enemyBulletA = new GameObject[100];
         enemyBulletB = new GameObject[100];
+        followerBullet = new GameObject[100];
 
         Generate();
     }
@@ -98,6 +101,11 @@ public class ObjectManager : MonoBehaviour
             enemyBulletB[index] = Instantiate(enemyBulletBPrefab);
             enemyBulletB[index].SetActive(false);
         }
+        for(int index = 0; index < followerBullet.Length; index++)
+        {
+            followerBullet[index] = Instantiate(followerBulletPrefab);
+            followerBullet[index].SetActive(false);
+        }
     }
 
     // [23] Object pool : 1) 외부에서 객체를 받을 수 있는 public 함수를 만든다.
@@ -135,6 +143,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "EnemyBulletB":
                 targetPool = enemyBulletB;
+                break;
+            case "FollowerBullet":
+                targetPool = followerBullet;
                 break;
         }
         // [23] Object pool : 3) 비활성화 되어 있는 객체를 골라서 활성화 한 뒤 반환 한다. -> GameManager
@@ -184,6 +195,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "EnemyBulletB":
                 targetPool = enemyBulletB;
+                break;
+            case "FollowerBullet":
+                targetPool = followerBullet;
                 break;
         }
         return targetPool;
