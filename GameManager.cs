@@ -76,12 +76,11 @@ public class GameManager : MonoBehaviour
     {   // [8] Enemy Spawn : 1) 적을 소환하기 위해 소환 시간은 매 프레임마다 증가한다.
         curSpawnDelay += Time.deltaTime;
         // [8] Enemy Spawn : 2) 딜레이 시간이 찼다면 적을 소환한다.
-        if(curSpawnDelay >= maxSpawnDelay)
+        if(curSpawnDelay >= maxSpawnDelay && !spawnEnd)
         {
             SpawnEnemy();
             // [8] Enemy Spawn : 3) 적을 소환 하였다면 딜레이는 0으로 초기화 하고, 소환 시간은 랜덤 초기화 한다.
             curSpawnDelay = 0;
-            maxSpawnDelay = Random.Range(0.5f, 3f);
         }
 
         // [13] UI On : 2) 매 프레임마다 플레이어의 점수를 출력한다.
@@ -91,14 +90,25 @@ public class GameManager : MonoBehaviour
     }
 
     void SpawnEnemy()
-    {   // [8] Enemy Spawn : 4) 랜덤한 적을 랜덤한 위치에 생성한다.
-        int ranEnemy = Random.Range(0, 3);
-
-        // [9] Spawn Upgrade : 1) 사이드 위치를 추가하여 랜덤 위치값을 조정한다. -> Enemy
-        int ranPoint = Random.Range(0, 9);
+    {   // [27] Enemy File Spawn : 1) 적의 타입을 리스트에서 받아서 오브젝트 매니저에 전달한다.
+        int enemyIndex = 0;
+        switch(spawnList[spawnIndex].type)
+        {
+            case "S":
+                enemyIndex = 0;
+                break;
+            case "M":
+                enemyIndex = 1;
+                break;
+            case "L":
+                enemyIndex = 2;
+                break;
+        }
+        // [27] Enemy File Spawn : 2) 소환 위치도 리스트에서 받아온다.
+        int ranPoint = spawnList[spawnIndex].point;
         // [9] Spawn Upgrade : 3) 적을 생성할 때 저장하고 리지드바디를 받아와 방향을 지정해 준다.
         // [23] Object pool : 5) 오브젝트 매니저의 함수를 호출한다. -> Player
-        GameObject enemy = objectManager.MakeObj(enemyObjs[ranEnemy]);
+        GameObject enemy = objectManager.MakeObj(enemyObjs[enemyIndex]);
         enemy.transform.position = spawnPoints[ranPoint].position;
 
         Rigidbody2D rigid = enemy.GetComponent<Rigidbody2D>();
@@ -125,6 +135,17 @@ public class GameManager : MonoBehaviour
         {
             rigid.velocity = new Vector2(0, enemyLogic.speed * (-1));
         }
+
+        // [27] Enemy File Spawn : 3) 적을 생성하였다면 인덱스를 증가 시킨다.
+        spawnIndex++;
+        // [27] Enemy File Spawn : 4) 인덱스가 리스트의 갯수를 증가 하였는지 확인한다.
+        if(spawnIndex == spawnList.Count)
+        {
+            spawnEnd = true;
+            return;
+        }
+        // [27] Enemy File Spawn : 5) 인덱스를 증가 시킨 뒤에 다음 소환 시간을 배정한다.
+        maxSpawnDelay = spawnList[spawnIndex].delay;
     }
 
     // [13] UI On : 4) 플레이어의 현재 목숨을 Image UI로 그리는 함수를 만든다. -> Player

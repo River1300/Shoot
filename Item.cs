@@ -16,4 +16,12 @@ public class Item : MonoBehaviour
     {
         rigid.velocity = Vector2.down * 1.5f;
     }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.gameObject.tag == "BoarderBullet")
+        {
+            gameObject.SetActive(false);
+        }
+    }
 }
