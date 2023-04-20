@@ -25,6 +25,10 @@ public class Enemy : MonoBehaviour
     public ObjectManager objectManager;
     // [32] Boss Basic : 필요 속성(애니매이터)
     Animator anim;
+    // [34] Boss Logic : 필요 속성(보스의 패턴 번호, 패턴 반복 횟수, 최대 패턴 반복 횟수)
+    public int patternIndex;
+    public int curPatternCount;
+    public int[] maxPatternCount;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
@@ -40,7 +44,11 @@ public class Enemy : MonoBehaviour
     void OnEnable()
     {
         switch(enemyName)
-        {
+        {   // [34] Boss Logic : 1) 보스의 체력을 초기화 하고 끝까지 내려가지 않도록 멈추는 함수를 호출한다.
+            case "B":
+                health = 150;
+                Invoke("StopMove", 2);
+                break;
             case "S":
                 health = 1;
                 break;
@@ -62,6 +70,81 @@ public class Enemy : MonoBehaviour
 
         Fire();
         Reload();
+    }
+
+    void StopMove()
+    {   // [34] Boss Logic : 2) 비활성화 상태에서 호출되는 것을 맊기 위해 제어한다.
+        if(!gameObject.activeSelf) return;
+
+        Rigidbody2D rigid = GetComponent<Rigidbody2D>();
+        rigid.velocity = Vector2.zero;
+
+        // [34] Boss Logic : 3) 보스의 패턴을 실행하기 위한 생각 함수를 호출한다.
+        Invoke("Think", 2);
+    }
+
+    void Think()
+    {   // [34] Boss Logic : 4) 패턴 번호와 패턴 카운트를 초기화 한다.
+        patternIndex = (patternIndex == 3) ? 0 : patternIndex + 1;
+        curPatternCount = 0;
+        // [34] Boss Logic : 5) switch 문을 통해서 패턴 별 함수를 호출한다.
+        switch(patternIndex)
+        {
+            case 0:
+                FireForward();
+                break;
+            case 1:
+                FireShot();
+                break;
+            case 2:
+                FireArc();
+                break;
+            case 3:
+                FireAround();
+                break;
+        }
+    }
+    // [34] Boss Logic : 6) 각각의 패턴 함수를 만든다.
+    void FireForward()
+    {
+        Debug.Log("앞으로 4발 발사");
+
+        // [34] Boss Logic : 7) 모든 패턴은 최대 반복 횟수가 있고 이 반복 횟수를 채울 때까지 재귀한다.
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireForward", 2);
+        else
+            Invoke("Think", 3);
+    }
+    void FireShot()
+    {
+        Debug.Log("앞으로 샷건");
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireShot", 3.5f);
+        else
+            Invoke("Think", 3);
+    }
+    void FireArc()
+    {
+        Debug.Log("부채 발사");
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireArc", 0.15f);
+        else
+            Invoke("Think", 3);
+    }
+    void FireAround()
+    {
+        Debug.Log("둥글게둥글게");
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireAround", 0.7f);
+        else
+            Invoke("Think", 3);
     }
 
     void Fire()
