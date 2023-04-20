@@ -23,11 +23,17 @@ public class Enemy : MonoBehaviour
     public GameObject itemBoom;
     // [23] Object pool : 필요 속성(오브젝트 매니저)
     public ObjectManager objectManager;
+    // [32] Boss Basic : 필요 속성(애니매이터)
+    Animator anim;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
         spriteRenderer = GetComponent<SpriteRenderer>();
         // [9] Spawn Upgrade : 2) 사이드에서 탄생한 적은 아래로만 내려가서는 않되기 때문에 생성과 함께 속도의 초기화는 이제 필요 없다. -> GameManager
+
+        // [32] Boss Basic : 1) 보스일 경우에 애니매이터를 초기화 한다.
+        if(enemyName == "B")
+            anim = GetComponent<Animator>();
     }
 
     // [23] Object pool : 11) 적이 활성화 될 때마다 체력을 초기화 한다. -> ObjectManager
@@ -50,6 +56,10 @@ public class Enemy : MonoBehaviour
     // [10] Enemy Bullet : 1) 발사 함수와 재장선 함수를 매 프레임마다 호출한다.
     void Update()
     {   
+        // [32] Boss Basic : 2) 보스는 일반적인 방식으로 총을 발사하지 않는다.
+        if(enemyName == "B")
+            return;
+
         Fire();
         Reload();
     }
@@ -102,10 +112,20 @@ public class Enemy : MonoBehaviour
         
         // [7] Enemy : 3) 현재 체력에서 데미지를 빼기 연산한다.
         health -= dmg;
-        // [7] Enemy : 5) 피격 당했다면 스프라이트 렌더러를 이용하여 스프라이트를 교체한다.
-        spriteRenderer.sprite = sprites[1];
-        // [7] Enemy : 7) Invoke()를 통해 스프라이트를 되돌린다.
-        Invoke("ReturnSprite", 0.2f);
+
+        // [32] Boss Basic : 3) 보스는 피격될 때 애니메이션 피격을 출력한다.
+        if(enemyName == "B")
+        {
+            anim.SetTrigger("OnHit");
+        }
+        else
+        {
+            // [7] Enemy : 5) 피격 당했다면 스프라이트 렌더러를 이용하여 스프라이트를 교체한다.
+            spriteRenderer.sprite = sprites[1];
+            // [7] Enemy : 7) Invoke()를 통해 스프라이트를 되돌린다.
+            Invoke("ReturnSprite", 0.2f);
+        }
+
         // [7] Enemy : 4) 만약 체력이 0 이하로 떨어지면 오브젝트는 파괴된다.
         if (health <= 0) 
         {   // [13] UI On : 1) 플레이어의 로직에 접근하여 점수를 + 연산한다. -> GameManager
@@ -113,7 +133,8 @@ public class Enemy : MonoBehaviour
             playerLogic.score += enemyScore;
 
             // [19] Item Drop : 1) 아이템이 나올 확률을 지정하기 위해 랜덤 값을 받는다.
-            int ran = Random.Range(0, 11);
+            // [32] Boss Basic : 4) 보스는 아이템을 뱉지 않는다.
+            int ran = (enemyName == "B") ? 0 : Random.Range(0, 11);
             // [19] Item Drop : 2) 확률에 따라서 아이템을 드랍한다. -> Background
             // [23] Object pool : 8) 아이템 객체를 불러온다.
             if(ran < 3){
@@ -142,7 +163,8 @@ public class Enemy : MonoBehaviour
     // [7] Enemy : 8) 다른 콜라이더와 충돌할 때 호출되는 함수를 만든다.
     void OnTriggerEnter2D(Collider2D other)
     {   // [7] Enemy : 9) 충돌한 콜라이더가 총알 경계선이라면?
-        if(other.gameObject.tag == "BoarderBullet")
+        // [32] Boss Basic : 5) 보스는 경계선에 닿아도 제거되지 않는다. -> GameManager
+        if(other.gameObject.tag == "BoarderBullet" && enemyName != "B")
         {
             gameObject.SetActive(false);
             transform.rotation = Quaternion.identity;

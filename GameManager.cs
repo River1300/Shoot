@@ -31,7 +31,9 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         spawnList = new List<Spawn>();
-        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+
+        // [33] Boss Prefab : 1) 보스의 이름을 등록한다.
+        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL", "EnemyB"};
 
         // [26] File End : 4) 게임이 시작될 때 스테이지 파일을 읽도록 한다.
         ReadSpawnFile();
@@ -93,7 +95,10 @@ public class GameManager : MonoBehaviour
     {   // [27] Enemy File Spawn : 1) 적의 타입을 리스트에서 받아서 오브젝트 매니저에 전달한다.
         int enemyIndex = 0;
         switch(spawnList[spawnIndex].type)
-        {
+        {   // [33] Boss Prefab : 2) 보스의 이름으로 객체를 받아온다. -> Enemy
+            case "B":
+                enemyIndex = 3;
+                break;
             case "S":
                 enemyIndex = 0;
                 break;

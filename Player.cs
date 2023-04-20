@@ -103,7 +103,7 @@ public class Player : MonoBehaviour
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
-            // [30] Sub Follow : 3) 3 이상의 파워는 세 발로 고정한다.
+            // [30] Sub Follow : 3) 3 이상의 파워는 세 발로 고정한다. -> Bullet
             default:
                 // [6] Power : 3) 파워가 3단계일 때는 총알 두발에 + 큰 총알을 발사한다. 객체를 생성할 때 다른 프리팹을 사용한다.
                 GameObject bulletLL = objectManager.MakeObj("PlayerBulletA");

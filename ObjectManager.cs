@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ObjectManager : MonoBehaviour
 {   // [22] ObjectManager : 필요 속성(모든 공장, 공장의 인스턴스를 담을 배열들)
+    public GameObject enemyBPrefab;
     public GameObject enemySPrefab;
     public GameObject enemyMPrefab;
     public GameObject enemyLPrefab;
@@ -15,6 +16,9 @@ public class ObjectManager : MonoBehaviour
     public GameObject enemyBulletAPrefab;
     public GameObject enemyBulletBPrefab;
     public GameObject followerBulletPrefab;
+    public GameObject bossBulletAPrefab;
+    public GameObject bossBulletBPrefab;
+    GameObject[] enemyB;
     GameObject[] enemyS;
     GameObject[] enemyM;
     GameObject[] enemyL;
@@ -26,12 +30,15 @@ public class ObjectManager : MonoBehaviour
     GameObject[] enemyBulletA;
     GameObject[] enemyBulletB;
     GameObject[] followerBullet;
+    GameObject[] bossBulletA;
+    GameObject[] bossBulletB;
     // [23] Object pool : 필요 속성(임시 객체 저장소)
     GameObject[] targetPool;
 
     // [22] ObjectManager : 1) 배열을 초기화 해준다.
     void Awake()
     {
+        enemyB = new GameObject[3];
         enemyS = new GameObject[20];
         enemyM = new GameObject[10];
         enemyL = new GameObject[10];
@@ -43,12 +50,19 @@ public class ObjectManager : MonoBehaviour
         enemyBulletA = new GameObject[100];
         enemyBulletB = new GameObject[100];
         followerBullet = new GameObject[100];
+        bossBulletA = new GameObject[100];
+        bossBulletB = new GameObject[1000];
 
         Generate();
     }
     // [22] ObjectManager : 2) 배열의 길이만큼 인스턴스를 채워준다.
     void Generate()
     {
+        for(int index = 0; index < enemyB.Length; index++)
+        {
+            enemyB[index] = Instantiate(enemyBPrefab);
+            enemyB[index].SetActive(false);
+        }
         for(int index = 0; index < enemyS.Length; index++)
         {
             enemyS[index] = Instantiate(enemySPrefab);
@@ -106,6 +120,16 @@ public class ObjectManager : MonoBehaviour
             followerBullet[index] = Instantiate(followerBulletPrefab);
             followerBullet[index].SetActive(false);
         }
+        for(int index = 0; index < bossBulletA.Length; index++)
+        {
+            bossBulletA[index] = Instantiate(bossBulletAPrefab);
+            bossBulletA[index].SetActive(false);
+        }
+        for(int index = 0; index < bossBulletB.Length; index++)
+        {
+            bossBulletB[index] = Instantiate(bossBulletBPrefab);
+            bossBulletB[index].SetActive(false);
+        }
     }
 
     // [23] Object pool : 1) 외부에서 객체를 받을 수 있는 public 함수를 만든다.
@@ -114,6 +138,9 @@ public class ObjectManager : MonoBehaviour
         // [23] Object pool : 2) 객체의 종류가 많으니 switch문으로 구분하여 객체를 반환한다.
         switch(type)
         {
+            case "EnemyB":
+                targetPool = enemyB;
+                break;
             case "EnemyS":
                 targetPool = enemyS;
                 break;
@@ -146,6 +173,12 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "FollowerBullet":
                 targetPool = followerBullet;
+                break;
+            case "BossBulletA":
+                targetPool = bossBulletA;
+                break;
+            case "BossBulletB":
+                targetPool = bossBulletB;
                 break;
         }
         // [23] Object pool : 3) 비활성화 되어 있는 객체를 골라서 활성화 한 뒤 반환 한다. -> GameManager
@@ -166,6 +199,9 @@ public class ObjectManager : MonoBehaviour
     {
         switch(type)
         {
+            case "EnemyB":
+                targetPool = enemyB;
+                break;
             case "EnemyS":
                 targetPool = enemyS;
                 break;
@@ -198,6 +234,12 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "FollowerBullet":
                 targetPool = followerBullet;
+                break;
+            case "BossBulletA":
+                targetPool = bossBulletA;
+                break;
+            case "BossBulletB":
+                targetPool = bossBulletB;
                 break;
         }
         return targetPool;
