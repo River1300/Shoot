@@ -106,8 +106,25 @@ public class Enemy : MonoBehaviour
     }
     // [34] Boss Logic : 6) 각각의 패턴 함수를 만든다.
     void FireForward()
-    {
-        Debug.Log("앞으로 4발 발사");
+    {   // [35] FireForward : 1) 오브젝트 매니저로부터 총알을 받아오고 위치를 지정한다.
+        GameObject bulletL = objectManager.MakeObj("BossBulletA");
+        bulletL.transform.position = transform.position + Vector3.left * 0.3f;
+        GameObject bulletLL = objectManager.MakeObj("BossBulletA");
+        bulletLL.transform.position = transform.position + Vector3.left * 0.45f;
+        GameObject bulletR = objectManager.MakeObj("BossBulletA");
+        bulletR.transform.position = transform.position + Vector3.right * 0.3f;
+        GameObject bulletRR = objectManager.MakeObj("BossBulletA");
+        bulletRR.transform.position = transform.position + Vector3.right * 0.45f;
+        // [35] FireForward : 2) 리지드바디 컴포넌트를 받는다.
+        Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidLL = bulletLL.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidRR = bulletRR.GetComponent<Rigidbody2D>();
+        // [35] FireForward : 3) 아래 방향으로 발사.
+        rigidL.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidLL.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidR.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidRR.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
 
         // [34] Boss Logic : 7) 모든 패턴은 최대 반복 횟수가 있고 이 반복 횟수를 채울 때까지 재귀한다.
         curPatternCount++;
@@ -117,8 +134,20 @@ public class Enemy : MonoBehaviour
             Invoke("Think", 3);
     }
     void FireShot()
-    {
-        Debug.Log("앞으로 샷건");
+    {   // [36] FireShot : 1) 반복문을 통해서 5발의 총알을 플레이어를 향해 발사한다.
+        for(int i = 0; i < 5; i++)
+        {
+            GameObject bullet = objectManager.MakeObj("EnemyBulletB");
+            bullet.transform.position = transform.position;
+
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+            Vector2 dirVec = player.transform.position - transform.position;
+            // [36] FireShot : 2) 플레이어의 방향에서 약간씩 변화를 주어 랜덤한 방향으로 발사 한다.
+            Vector2 ranVec = new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(0f, 2f));
+            dirVec += ranVec;
+            rigid.AddForce(dirVec.normalized * 3, ForceMode2D.Impulse);
+        }
 
         curPatternCount++;
         if(curPatternCount < maxPatternCount[patternIndex])
