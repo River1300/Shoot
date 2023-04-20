@@ -37,6 +37,8 @@ public class Player : MonoBehaviour
     public bool isBoomTime;
     // [23] Object pool : 필요 속성(오브젝트 매니저)
     public ObjectManager objectManager;
+    // [30] Sub Follow : 필요 속성(보조 무기 오브젝트를 담을 게임 오브젝트 배열)
+    public GameObject[] followerObject;
 
     void Awake()
     {
@@ -101,7 +103,8 @@ public class Player : MonoBehaviour
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
-            case 3:
+            // [30] Sub Follow : 3) 3 이상의 파워는 세 발로 고정한다.
+            default:
                 // [6] Power : 3) 파워가 3단계일 때는 총알 두발에 + 큰 총알을 발사한다. 객체를 생성할 때 다른 프리팹을 사용한다.
                 GameObject bulletLL = objectManager.MakeObj("PlayerBulletA");
                 bulletLL.transform.position = transform.position + Vector3.left * 0.35f;
@@ -197,6 +200,17 @@ public class Player : MonoBehaviour
         boomEffect.SetActive(false);
     }
 
+    // [30] Sub Follow : 1) 보조 무기를 추가하는 함수를 만든다.
+    void AddFollower()
+    {
+        if(power == 4)
+            followerObject[0].SetActive(true);
+        else if(power == 5)
+            followerObject[1].SetActive(true);
+        else if(power == 6)
+            followerObject[2].SetActive(true);
+    }
+
     // [2] Boarder : 1) 경계선에 닿았다면 bool 값을 true로 배정한다.
     void OnTriggerEnter2D(Collider2D other)
     {
@@ -259,6 +273,8 @@ public class Player : MonoBehaviour
                     else
                     {
                         power++;
+                        // [30] Sub Follow : 2) 보조 무기 소환 함수를 호출한다.
+                        AddFollower();
                     }
                 break;
                 case "Boom":

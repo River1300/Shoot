@@ -42,7 +42,7 @@ public class Follower : MonoBehaviour
             followerPos = parentPos.Dequeue();
         }
         else if(parentPos.Count < followDelay)
-        {   // [29] Sub Follow : 6) 큐에 저장된 위치 값의 갯수가 크면 Dequeue, 작으면 playerPos, 같으면 멈춤
+        {   // [29] Sub Follow : 6) 큐에 저장된 위치 값의 갯수가 크면 Dequeue, 작으면 playerPos, 같으면 멈춤 -> Player
             followerPos = playerPos.position;
         }
     }
