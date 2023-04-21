@@ -156,8 +156,16 @@ public class Enemy : MonoBehaviour
             Invoke("Think", 3);
     }
     void FireArc()
-    {
-        Debug.Log("부채 발사");
+    {   // [37] FireShot : 1) 회전하는 총알을 받아온다. 회전하기 전에 회전 값을 초기화 시킨다.
+        GameObject bullet = objectManager.MakeObj("EnemyBulletA");
+        bullet.transform.position = transform.position;
+        bullet.transform.rotation = Quaternion.identity;
+
+        Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+        // [37] FireShot : 2) 부채꼴 방향을 위해 Mathf.Cos()함수를 사용한다.
+        Vector2 dirVec = new Vector2(Mathf.Cos(Mathf.PI * 15 * curPatternCount / maxPatternCount[patternIndex]), -1f);
+        rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
 
         curPatternCount++;
         if(curPatternCount < maxPatternCount[patternIndex])
@@ -167,7 +175,25 @@ public class Enemy : MonoBehaviour
     }
     void FireAround()
     {
-        Debug.Log("둥글게둥글게");
+        int roundNumA = 30;
+        int roundNumB = 40;
+        int roundNum = (curPatternCount % 2 == 0) ? roundNumA : roundNumB;
+        // [38] FireAround : 1) 반복 문으로 원형 형태의 총알을 발사한다.
+        for(int index = 0; index < roundNum; index++)
+        {
+            GameObject bullet = objectManager.MakeObj("BossBulletB");
+            bullet.transform.position = transform.position;
+            bullet.transform.rotation = Quaternion.identity;
+
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+            // [38] FireAround : 2) 원형 형태로 발사한다.
+            Vector2 dirVec = new Vector2(Mathf.Cos(Mathf.PI * 2 * index / roundNum), Mathf.Sin(Mathf.PI * 2 * index / roundNum));
+            rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
+
+            // [38] FireAround : 3) 총알 이미지의 방향을 조정해 준다.
+            Vector3 rotVec = Vector3.forward * 360 * index / roundNum + Vector3.forward * 90;
+            bullet.transform.Rotate(rotVec);
+        }
 
         curPatternCount++;
         if(curPatternCount < maxPatternCount[patternIndex])
