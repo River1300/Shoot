@@ -39,10 +39,43 @@ public class Player : MonoBehaviour
     public ObjectManager objectManager;
     // [30] Sub Follow : 필요 속성(보조 무기 오브젝트를 담을 게임 오브젝트 배열)
     public GameObject[] followerObject;
+    // [39] Player Death : 필요 속성(플래그, 스파라이트 랜더러)
+    public bool isRespawnTime;
+    SpriteRenderer spriteRenderer;
 
     void Awake()
     {
         anim = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    void OnEnable()
+    {
+        Unbeatable();
+        Invoke("Unbeatable", 3);
+    }
+    // [39] Player Death : 1) 무적 함수를 만든다.
+    void Unbeatable()
+    {   // [39] Player Death : 2) 무적 함수가 호출될 때마다 플래그 값이 반대가 된다.
+        isRespawnTime = !isRespawnTime;
+
+        if(isRespawnTime)
+        {   // [39] Player Death : 3) 무적 타임일 때는 플레이어의 알파값을 낮춘다.
+            spriteRenderer.color = new Color(1, 1, 1, 0.5f);
+            // [39] Player Death : 5) 보조 무기도 플레이어와 마찬가지로 알파값을 낮춘다.
+            for(int i = 0; i < followerObject.Length; i++)
+            {
+                followerObject[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.5f);
+            }
+        }
+        else
+        {
+            spriteRenderer.color = new Color(1, 1, 1, 1);
+            for(int i = 0; i < followerObject.Length; i++)
+            {
+                followerObject[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
+            }
+        }
     }
 
     void Update()
@@ -233,7 +266,10 @@ public class Player : MonoBehaviour
             }
         }
         else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
-        {   // [14] OnHit Bug : 1) 현재 피격된 상태라면 아래 로직을 실행하지 않는다.
+        {   // [39] Player Death : 4) 현재 무적 상태인지 확인하여 아래 로직을 실행할지 않할지 결정한다.
+            if(isRespawnTime) return;
+            
+            // [14] OnHit Bug : 1) 현재 피격된 상태라면 아래 로직을 실행하지 않는다.
             if(isHit) return;
             // [14] OnHit Bug : 2) 현재 피격된 상태 전이라면 아래 로직을 실행하고 true를 준다. -> GameManager
             isHit = true;

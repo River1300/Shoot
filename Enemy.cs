@@ -190,7 +190,7 @@ public class Enemy : MonoBehaviour
             Vector2 dirVec = new Vector2(Mathf.Cos(Mathf.PI * 2 * index / roundNum), Mathf.Sin(Mathf.PI * 2 * index / roundNum));
             rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
 
-            // [38] FireAround : 3) 총알 이미지의 방향을 조정해 준다.
+            // [38] FireAround : 3) 총알 이미지의 방향을 조정해 준다. -> Player
             Vector3 rotVec = Vector3.forward * 360 * index / roundNum + Vector3.forward * 90;
             bullet.transform.Rotate(rotVec);
         }
