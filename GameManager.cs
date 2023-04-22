@@ -125,6 +125,9 @@ public class GameManager : MonoBehaviour
         // [23] Object pool : 7) 게임 매니저에 있는 오브젝트 매니저를 적 스크립트에 배정해 준다. -> Enemy
         enemyLogic.objectManager = objectManager;
 
+        // [41] Explosion : 9) 게임 매니저 스크립트에 자기 자신을 전달한다.
+        enemyLogic.gameManager = this;
+
         // [9] Spawn Upgrade : 5) ranPoint에 따라서 방향과 속도를 지정해준다. -> Enemy
         if(ranPoint == 5 || ranPoint == 6)
         {
@@ -192,6 +195,17 @@ public class GameManager : MonoBehaviour
         // [14] OnHit Bug : 3) 플레이어 로직으로 부터 bool 속성을 받아와 false를 준다. -> Item
         Player playerLogic = player.GetComponent<Player>();
         playerLogic.isHit = false;
+    }
+
+    // [40] Explosion : 3) 오브젝트가 죽을 때 호출할 폭발 함수를 만든다.
+    public void CallExplosion(Vector3 pos, string type)
+    {   // [40] Explosion : 4) 폭발 객체와 폭발 스크립트를 받아온다.
+        GameObject explosion = objectManager.MakeObj("Explosion");
+        Explosion explosionLogic = explosion.GetComponent<Explosion>();
+        // [40] Explosion : 5) 매개변수로 죽는 오브젝트의 위치를 받아서 폭발 위치에 배정한다.
+        explosion.transform.position = pos;
+        // [41] Explosion : 6) 폭발 애니매이션 함수를 호출한다. -> Player
+        explosionLogic.StartExplosion(type);
     }
 
     // [13] UI On : 6) 게임 오버 오브젝트를 활성화 시킨다. -> Player

@@ -29,6 +29,8 @@ public class Enemy : MonoBehaviour
     public int patternIndex;
     public int curPatternCount;
     public int[] maxPatternCount;
+    // [41] Explosion : 필요 속성(게임 매니저) -> GameManager
+    public GameManager gameManager;
 
     void Awake()
     {   // [7] Enemy : 1) 컴포넌트를 초기화 하고 속력 값을 초기화 한다.
@@ -290,6 +292,9 @@ public class Enemy : MonoBehaviour
             gameObject.SetActive(false);
             // [23] Object pool : 9) 적 객체가 비활성화 될 때 방향값을 초기화 시킨다. -> Item
             transform.rotation = Quaternion.identity;
+
+            // [41] Explosion : 8) 적의 위치와 이름을 전달하여 함수를 호출한다.
+            gameManager.CallExplosion(transform.position, enemyName);
         }
     }
     // [7] Enemy : 6) 스프라이트를 원 상태로 되돌리는 함수를 만든다.

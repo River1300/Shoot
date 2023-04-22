@@ -18,6 +18,7 @@ public class ObjectManager : MonoBehaviour
     public GameObject followerBulletPrefab;
     public GameObject bossBulletAPrefab;
     public GameObject bossBulletBPrefab;
+    public GameObject explosionPrefab;
     GameObject[] enemyB;
     GameObject[] enemyS;
     GameObject[] enemyM;
@@ -32,6 +33,7 @@ public class ObjectManager : MonoBehaviour
     GameObject[] followerBullet;
     GameObject[] bossBulletA;
     GameObject[] bossBulletB;
+    GameObject[] explosion;
     // [23] Object pool : 필요 속성(임시 객체 저장소)
     GameObject[] targetPool;
 
@@ -52,6 +54,7 @@ public class ObjectManager : MonoBehaviour
         followerBullet = new GameObject[100];
         bossBulletA = new GameObject[100];
         bossBulletB = new GameObject[1000];
+        explosion = new GameObject[50];
 
         Generate();
     }
@@ -130,6 +133,11 @@ public class ObjectManager : MonoBehaviour
             bossBulletB[index] = Instantiate(bossBulletBPrefab);
             bossBulletB[index].SetActive(false);
         }
+        for(int index = 0; index < explosion.Length; index++)
+        {
+            explosion[index] = Instantiate(explosionPrefab);
+            explosion[index].SetActive(false);
+        }
     }
 
     // [23] Object pool : 1) 외부에서 객체를 받을 수 있는 public 함수를 만든다.
@@ -179,6 +187,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "BossBulletB":
                 targetPool = bossBulletB;
+                break;
+            case "Explosion":
+                targetPool = explosion;
                 break;
         }
         // [23] Object pool : 3) 비활성화 되어 있는 객체를 골라서 활성화 한 뒤 반환 한다. -> GameManager
@@ -240,6 +251,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "BossBulletB":
                 targetPool = bossBulletB;
+                break;
+            case "Explosion":
+                targetPool = explosion;
                 break;
         }
         return targetPool;

@@ -62,7 +62,7 @@ public class Player : MonoBehaviour
         if(isRespawnTime)
         {   // [39] Player Death : 3) 무적 타임일 때는 플레이어의 알파값을 낮춘다.
             spriteRenderer.color = new Color(1, 1, 1, 0.5f);
-            // [39] Player Death : 5) 보조 무기도 플레이어와 마찬가지로 알파값을 낮춘다.
+            // [39] Player Death : 5) 보조 무기도 플레이어와 마찬가지로 알파값을 낮춘다. -> Explosion
             for(int i = 0; i < followerObject.Length; i++)
             {
                 followerObject[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.5f);
@@ -278,6 +278,9 @@ public class Player : MonoBehaviour
             life--;
             // [13] UI On : 5) 피격될 때 게임 매니저에게 목숨아이콘을 하나 없에 달라고 요청한다. -> GameManager
             manager.UpdateLifeIcon(life);
+
+            // [41] Explosion : 7) 플레이어가 죽을 때 자신의 위치와 이름을 전달하며 함수를 호출한다. -> Enemy
+            manager.CallExplosion(transform.position, "P");
 
             if (life <= 0)
             {   // [13] UI On : 7) 만약 목숨이 0이 된다면 게임 오버 화면을 띄운다. -> GameManager
