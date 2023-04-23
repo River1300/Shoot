@@ -295,6 +295,10 @@ public class Enemy : MonoBehaviour
 
             // [41] Explosion : 8) 적의 위치와 이름을 전달하여 함수를 호출한다. -> Player
             gameManager.CallExplosion(transform.position, enemyName);
+
+            // [45] Fade In/Out : 3) 만약 보스를 잡았다면 스테이지 종료 함수를 호출한다. -> GameManager
+            if(enemyName == "B")
+                gameManager.StageEnd();
         }
     }
     // [7] Enemy : 6) 스프라이트를 원 상태로 되돌리는 함수를 만든다.

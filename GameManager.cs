@@ -27,6 +27,14 @@ public class GameManager : MonoBehaviour
     public List<Spawn> spawnList;
     public int spawnIndex;
     public bool spawnEnd;
+    // [43] Stage : 필요 속성(스테이지 번호)
+    public int stage;
+    // [44] Stage UI : 필요 속성(텍스트 UI의 애니매이터)
+    public Animator startAnim;
+    public Animator endAnim;
+    // [45] Fade In/Out : 필요 속성(애니매이터, 플레이어 위치)
+    public Animator fadeAnim;
+    public Transform playerPos;
 
     void Awake()
     {
@@ -36,7 +44,39 @@ public class GameManager : MonoBehaviour
         enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL", "EnemyB"};
 
         // [26] File End : 4) 게임이 시작될 때 스테이지 파일을 읽도록 한다.
+        
+        StartStage();
+    }
+
+    // [43] Stage : 2) 스테이지 파일을 처음 읽을 때와 다 읽었을 때의 함수를 만든다.
+    public void StartStage()
+    {   // [44] Stage UI : 1) 트리거를 쏜다.
+        startAnim.SetTrigger("On");
+        // [44] Stage UI : 2) Text 컴포넌트를 받아와서 스테이지 번호를 입력한다.
+        startAnim.GetComponent<Text>().text = "Stage " + stage + "\nStart";
+        endAnim.GetComponent<Text>().text = "Stage " + stage + "\nEnd";
+
         ReadSpawnFile();
+
+        // [45] Fade In/Out : 1) 장막을 들춘다.
+        fadeAnim.SetTrigger("In");
+    }
+    public void StageEnd()
+    {
+        endAnim.SetTrigger("On");
+
+        stage++;
+
+        fadeAnim.SetTrigger("Out");
+
+        // [45] Fade In/Out : 2) 플레이어 위치를 조정한다. -> Enemy
+        player.transform.position = playerPos.position;
+
+        // [45] Fade In/Out : 4) 다음 스테이지가 있다면 스테이지 시작 함수를 호출하고 없다면 게임 오버 함수를 호출한다.
+        if(stage > 2)
+            Invoke("GameOver", 3);
+        else
+            Invoke("StartStage", 5);
     }
 
     // [24] File : 1) 파일을 읽는 함수를 만든다.
@@ -47,7 +87,8 @@ public class GameManager : MonoBehaviour
         spawnEnd = false;
 
         // [25] File Read : 2) 메모장을 읽기 위한 변수를 준비한다.
-        TextAsset textFile = Resources.Load("Stage 1") as TextAsset;
+        // [43] Stage : 1) 스테이지 번호를 입력한다.
+        TextAsset textFile = Resources.Load("Stage " + stage) as TextAsset;
         StringReader stringReader = new StringReader(textFile.text);
 
         // [26] File End : 1) 파일을 모두 읽을 때 까지 반복한다.

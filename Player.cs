@@ -217,7 +217,7 @@ public class Player : MonoBehaviour
     // [18] Input.Boom : 1) 폭탄 발사 함수를 만든다.
     void Boom()
     {   // [18] Input.Boom : 2) 발사 버튼, 발사 중, 갯수가 0 에 대한 제어문을 만든다.
-        // [42] Joy Pad : 8) 버튼 플래그를 통한 새로운 제어문을 만든다.
+        // [42] Joy Pad : 8) 버튼 플래그를 통한 새로운 제어문을 만든다. -> GameManager
         if(!isButtonB || isBoomTime || boom == 0) return;
 
         // [18] Input.Boom : 3) 사용 했으므로 폭탄 갯수를 줄인다. 그리고 폭탄 사용 중 임을 체크
