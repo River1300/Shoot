@@ -42,6 +42,11 @@ public class Player : MonoBehaviour
     // [39] Player Death : 필요 속성(플래그, 스파라이트 랜더러)
     public bool isRespawnTime;
     SpriteRenderer spriteRenderer;
+    // [42] Joy Pad : 필요 속성(플래그 배열, 플래그)
+    public bool[] joyControl;
+    public bool isControl;
+    public bool isButtonA;
+    public bool isButtonB;
 
     void Awake()
     {
@@ -86,15 +91,46 @@ public class Player : MonoBehaviour
         Reload();
     }
 
+    // [42] Joy Pad : 1) 현재 어떤 버튼이 눌렸는지 체크하는 플래그 함수를 만든다.
+    public void JoyPanel(int type)
+    {   // [42] Joy Pad : 2) 9개의 버튼마다 0 ~ 8까지의 번호가 부여되고 눌려진 버튼은 type으로 전달된다.
+        for(int index = 0; index < 9; index++)
+        {
+            joyControl[index] = (index == type);
+        }
+    }
+    // [42] Joy Pad : 3) 해당 버튼이 눌렸음을 체크하는 함수
+    public void JoyDown()
+    {
+        isControl = true;
+    }
+    // [42] Joy Pad : 4) 해당 버튼이 때여젔음을 체크하는 함수
+    public void JoyUp()
+    {
+        isControl = false;
+    }
+
     // [4] Bullet : 1) Update() 함수 정리를 위해 이동 로직을 캡슐화
     void Move()
     {   // [1] Player Move : 1) 수직/수평 입력값을 받아서 저장한 뒤 방향으로 사용
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
+        // [42] Joy Pad : 5) 조이판넬에 마우스가 올라옴에 따라 방향 값을 받는다.
+        if(joyControl[0]) { h = -1; v = 1; }
+        if(joyControl[1]) { h = 0; v = 1; }
+        if(joyControl[2]) { h = 1; v = 1; }
+        if(joyControl[3]) { h = -1; v = 0; }
+        if(joyControl[4]) { h = 0; v = 0; }
+        if(joyControl[5]) { h = 1; v = 0; }
+        if(joyControl[6]) { h = -1; v = -1; }
+        if(joyControl[7]) { h = 0; v = -1; }
+        if(joyControl[8]) { h = 1; v = -1; }
+
         // [2] Boarder : 2) 이동 값이 있고 bool 변수가 true라면 이동 값은 0이 된다.
-        if((h == 1 && isTouchRight) || (h == -1 && isTouchLeft)) h = 0;
-        if((v == 1 && isTouchTop) || (v == -1 && isTouchBottom)) v = 0;
+        // [42] Joy Pad : 6) 조이판넬 버튼이 눌렸을 때만 해당 방향 값을 주도록 추가한다.
+        if((h == 1 && isTouchRight) || (h == -1 && isTouchLeft) || !isControl) h = 0;
+        if((v == 1 && isTouchTop) || (v == -1 && isTouchBottom) || !isControl) v = 0;
 
         // [1] Player Move : 2) 미래의 위치는 전달받은 방향으로 속도와 시간을 곱한 값
         Vector3 curPos = transform.position;
@@ -106,10 +142,29 @@ public class Player : MonoBehaviour
         if(Input.GetButtonDown("Horizontal") || Input.GetButtonUp("Horizontal")) anim.SetInteger("Input", (int)h);
     }
 
+    // [42] Joy Pad : 7) 총알과 폭탄 버튼 플래그에 값을 배정해줄 함수를 만든다.
+    public void ButtonADown()
+    {
+        isButtonA = true;
+    }
+
+    public void ButtonAUp()
+    {
+        isButtonA = false;
+    }
+
+    public void ButtonBDown()
+    {
+        isButtonB = true;
+    }
+
     // [4] Bullet : 2) 발사 함수에서 발사 로직을 작성한다.
     void Fire()
     {   // [5] Fire Update : 1) 사용자가 발사 버튼을 누르지 않았다면 총알은 발사되지 않는다.
-        if(!Input.GetButton("Fire1")) return;
+        
+        // [42] Joy Pad : 8) 버튼 플래그를 통한 새로운 제어문을 만든다.
+        if(!isButtonA) return;
+
         // [5] Fire Update : 3) 아직 발사 시간에 도달하지 못하였다면 총알은 발사되지 않는다.
         if(curShotDelay < maxShotDelay) return;
 
@@ -162,7 +217,9 @@ public class Player : MonoBehaviour
     // [18] Input.Boom : 1) 폭탄 발사 함수를 만든다.
     void Boom()
     {   // [18] Input.Boom : 2) 발사 버튼, 발사 중, 갯수가 0 에 대한 제어문을 만든다.
-        if(!Input.GetButton("Fire2") || isBoomTime || boom == 0) return;
+        // [42] Joy Pad : 8) 버튼 플래그를 통한 새로운 제어문을 만든다.
+        if(!isButtonB || isBoomTime || boom == 0) return;
+
         // [18] Input.Boom : 3) 사용 했으므로 폭탄 갯수를 줄인다. 그리고 폭탄 사용 중 임을 체크
         boom--;
         isBoomTime = true;

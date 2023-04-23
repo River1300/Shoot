@@ -293,7 +293,7 @@ public class Enemy : MonoBehaviour
             // [23] Object pool : 9) 적 객체가 비활성화 될 때 방향값을 초기화 시킨다. -> Item
             transform.rotation = Quaternion.identity;
 
-            // [41] Explosion : 8) 적의 위치와 이름을 전달하여 함수를 호출한다.
+            // [41] Explosion : 8) 적의 위치와 이름을 전달하여 함수를 호출한다. -> Player
             gameManager.CallExplosion(transform.position, enemyName);
         }
     }
