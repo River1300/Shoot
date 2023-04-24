@@ -1,0 +1,104 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class RE_Enemy : MonoBehaviour
+{
+    public GameObject player;
+    public GameObject bulletObjA;
+    public GameObject bulletObjB;
+
+    public int health;
+    public int enemyScore;
+
+    public string enemyName;
+
+    public float speed;
+    public float maxShotDelay;
+    public float curShotDelay;
+
+    public Sprite[] sprite;
+
+    SpriteRenderer spriteRenderer;
+
+    void Awake()
+    {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+void Update()
+    {   
+        Fire();
+        Reload();
+    }
+
+    void Fire()
+    {   
+        if(curShotDelay < maxShotDelay) return;
+
+        if(enemyName == "S")
+        {
+            GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+            Vector3 dirVec = player.transform.position - transform.position;
+            rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
+        }
+        else if(enemyName == "L")
+        {
+            GameObject bulletL = Instantiate(bulletObjB, transform.position + Vector3.left * 0.3f, transform.rotation);
+            GameObject bulletR = Instantiate(bulletObjB, transform.position + Vector3.right * 0.3f, transform.rotation);
+
+            Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
+            Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
+
+            Vector3 dirVecL = player.transform.position - (transform.position + Vector3.left * 0.3f);
+            Vector3 dirVecR = player.transform.position - (transform.position + Vector3.right * 0.3f);
+
+            rigidL.AddForce(dirVecL.normalized * 2, ForceMode2D.Impulse);
+            rigidR.AddForce(dirVecR.normalized * 2, ForceMode2D.Impulse);
+        }
+
+        curShotDelay = 0;
+    }
+
+    void Reload()
+    {
+        curShotDelay += Time.deltaTime;
+    }
+
+    void OnHit(int dmg)
+    {
+        health -= dmg;
+
+        spriteRenderer.sprite = sprite[1];
+        Invoke("ReturnSprite", 0.2f);
+
+        if(health < 0)
+        {
+            Player playerLogic = player.GetComponent<Player>();
+            playerLogic.score += enemyScore;
+
+            Destroy(gameObject);
+        }
+    }
+
+    void ReturnSprite()
+    {
+        spriteRenderer.sprite = sprite[0];
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.tag == "BoarderBullet")
+        {
+            Destroy(gameObject);
+        }
+        else if(other.gameObject.tag == "PlayerBullet")
+        {
+            RE_Bullet bullet = other.gameObject.GetComponent<RE_Bullet>();
+            Onhit(bullet.dmg);
+            Destroy(other.gameObject);
+        }
+    }
+}
