@@ -17,6 +17,7 @@ public class RE_GameManager : MonoBehaviour
 
     public Text scoreText;
     public Image[] lifeImage;
+    public Image[] boomImage;
 
     void Update()
     {
@@ -71,6 +72,18 @@ public class RE_GameManager : MonoBehaviour
         }
     }
 
+    public void UpdateBoomIcon(int boom)
+    {
+        for(int index = 0; index < 3; index++)
+        {
+            boomImage[index].color = new Color(1, 1, 1, 0);
+        }
+        for(int index = 0; index < boom; index++)
+        {
+            boomImage[index].color = new Color(1, 1, 1, 1);
+        }
+    }
+
     public void RespawnPlayer()
     {
         Invoke("RespawnPlayerExe", 2);
@@ -79,6 +92,9 @@ public class RE_GameManager : MonoBehaviour
     {
         player.transform.position = Vector3.down * 3.5f;
         player.SetActive(true);
+
+        RE_Player playerLogic = player.GetComponent<RE_Player>();
+        playerLogic.isHit = false;
     }
 
     public void GameOver()

@@ -6,10 +6,14 @@ public class RE_Player : MonoBehaviour
 {
     public GameObject bulletObjA;
     public GameObject bulletObjB;
+    public GameObject boomEffect;
 
     public RE_GameManager manager;
 
+    public int maxPower;
     public int power;
+    public int maxBoom;
+    public int boom;
     public int life;
     public int score;
 
@@ -21,6 +25,8 @@ public class RE_Player : MonoBehaviour
     public bool isTouchBottom;
     public bool isTouchLeft;
     public bool isTouchRight;
+    public bool isHit;
+    public bool isBoomTime;
 
     Animator anim;
 
@@ -29,11 +35,39 @@ public class RE_Player : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
+    void Boom()
+    {
+        if(!Input.GetButton("Fire2") || isBoomTime || boom == 0) return;
+        boom--;
+        isBoomTime = true;
+
+        boomEffect.SetActive(true);
+        Invoke("OffBoomEffect", 4f);
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+        for(int i = 0; i < enemies.Length; i++)
+        {
+            RE_Enemy enemyLogic = enemies[i].GetComponent<RE_Enemy>();
+            enemyLogic.OnHit(5000);
+        }
+        GameObject[] bullets = GameObject.FindGameObjectsWithTag("Bullet");
+        for(int i = 0; i < bullets.Length; i++)
+        {
+            Destroy(bullets[i]);
+        }
+    }
+
+    void OffBoomEffect()
+    {
+        isBoomTime = false;
+        boomEffect.SetActive(false);
+    }
+
     void Update()
     {
         Move();
         Reload();
         Fire();
+        Boom();
     }
 
     void Move()
@@ -114,6 +148,9 @@ public class RE_Player : MonoBehaviour
         }
         else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
         {
+            if(isHit) return;
+            isHit = true;
+
             life--;
             manager.UpdateLifeIcon(life);
 
@@ -125,8 +162,37 @@ public class RE_Player : MonoBehaviour
             {
                 manager.RespawnPlayer();
             }
-            
+
             Destroy(gameObject);
+        }
+        else if(other.gameObject.tag == "Item")
+        {
+            RE_Item item = other.gameObject.GetComponent<RE_Item>();
+
+            switch(item.type)
+            {
+                case "Coin":
+                    score += 100;
+                    break;
+                case "Power":
+                    if(power > maxPower)
+                        score += 50;
+                    else   
+                        power++;
+                    break;
+                case "Boom":
+                    if(boom > maxBoom)
+                    {
+                        score += 50;
+                    }
+                    else
+                    {
+                        boom++;
+                        manager.UpdateBoomIcon(boom);
+                    }
+                    break;
+            }
+            Destroy(other.gameObject);
         }
     }
     void OnTriggerExit2D(Collider2D other)
