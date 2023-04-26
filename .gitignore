@@ -9,3 +9,6 @@ ObjectManager.cs.meta
 Spawn.cs.meta
 Follower.cs.meta
 Explosion.cs.meta
+RE_Background.cs.meta
+RE_Bullet.cs.meta
+RE_Enemy.meta

@@ -10,7 +10,7 @@ public class RE_Bullet : MonoBehaviour
     {
         if(other.gameObject.tag == "BoarderBullet")
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }

@@ -3,27 +3,67 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
 
 public class RE_GameManager : MonoBehaviour
 {
     public GameObject player;
     public GameObject gameOverSet;
-    public GameObject[] enemyObjs;
+    public string[] enemyObjs;
+    public List<RE_Spawn> spawnList;
 
     public Transform[] spawnPoints;
 
+    public int spawnIndex;
+
     public float maxSpawnDelay;
     public float curSpawnDelay;
+
+    public bool spawnEnd;
 
     public Text scoreText;
     public Image[] lifeImage;
     public Image[] boomImage;
 
+    public RE_ObjectManager objectManager;
+
+    void Awake()
+    {
+        spawnList = new List<RE_Spawn>();
+        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+
+        ReadSpawnFile();
+    }
+
+    void ReadSpawnFile()
+    {
+        spawnList.Clear();
+        spawnEnd = false;
+        spawnIndex = 0;
+
+        TextAsset textFile = Resources.Load("Stage 1") as TextAsset;
+        StringReader stringReader = new StringReader(textFile.text);
+
+        while(stringReader != null)
+        {
+            string line = stringReader.ReadLine();
+            if(line == null) break;
+
+            RE_Spawn spawnData = new RE_Spawn();
+            spawnData.delay = float.Parse(line.Split(',')[0]);
+            spawnData.type = line.Split(',')[1];
+            spawnData.point = int.Parse(line.Split(',')[2]);
+            spawnAdd(spawnData);
+        }
+        stringReader.Close();
+        maxSpawnDelay = spawnList[0].delay;
+    }
+
     void Update()
     {
         curSpawnDelay += Time.deltaTime;
 
-        if(curSpawnDelay > maxSpawnDelay)
+        if(curSpawnDelay > maxSpawnDelay && !spawnEnd)
         {
             SpawnEnemy();
             curSpawnDelay = 0;
@@ -36,13 +76,30 @@ public class RE_GameManager : MonoBehaviour
 
     void SpawnEnemy()
     {
-        int ranEnemy = Random.Range(0, 5);
+        int enemyIndex = 0;
+
+        switch(spawnList[spawnIndex].type)
+        {
+            case "S":
+                enemyIndex = 0;
+                break;
+            case "M":
+                enemyIndex = 1;
+                break;
+            case "L":
+                enemyIndex = 2;
+                break;
+        }
         int ranPoint = Random.Range(0, 9);
-        GameObject enemy = Instantiate(enemyObjs[ranEnemy], spawnPoints[ranPoint].position, spawnPoints[ranPoint].rotation);
+
+        GameObject enemy = objectManager.MakeObj(enemyObjs[enemyIndex]);
+        enemy.transform.position = spawnPoints[ranPoint].position;
+
         Rigidbody2D rigid = enemy.GetComponent<Rigidbody2D>();
-        RE_Enemy enemyLogic = enemy.GetComponent<RE_Enemy>();
+        Enemy enemyLogic = enemy.GetComponent<Enemy>();
 
         enemyLogic.player = player;
+        enemyLogic.objectManager = objectManager;
 
         if(ranPoint == 5 || ranPoint == 6)
         {
@@ -58,6 +115,14 @@ public class RE_GameManager : MonoBehaviour
         {
             rigid.velocity = new Vector2(0, enemyLogic.speed * (-1));
         }
+
+        spawnIndex++;
+        if(spanwIndex == spawnList.Count)
+        {
+            spawnEnd = true;
+            return;
+        }
+        maxSpawnDelay = spawnList[spawnIndex].delay;
     }
 
     public void UpdateLifeIcon(int life)

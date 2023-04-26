@@ -11,6 +11,8 @@ public class RE_Enemy : MonoBehaviour
     public GameObject itemPower;
     public GameObject itemBoom;
 
+    public RE_ObjectManager objectManager;
+
     public int health;
     public int enemyScore;
 
@@ -29,6 +31,22 @@ public class RE_Enemy : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
+    void OnEnable()
+    {
+        switch(enemyName)
+        {
+            case "S":
+                health = 3;
+                break;
+            case "M":
+                health = 5;
+                break;
+            case "L":
+                health = 10;
+                break;
+        }
+    }
+
     void Update()
     {   
         Fire();
@@ -41,7 +59,9 @@ public class RE_Enemy : MonoBehaviour
 
         if(enemyName == "S")
         {
-            GameObject bullet = Instantiate(bulletObjA, transform.position, transform.rotation);
+            GameObject bullet = objectManager.MakeObj("EnemyBulletA");
+            bullet.transform.position = transform.position;
+
             Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
 
             Vector3 dirVec = player.transform.position - transform.position;
@@ -49,8 +69,10 @@ public class RE_Enemy : MonoBehaviour
         }
         else if(enemyName == "L")
         {
-            GameObject bulletL = Instantiate(bulletObjB, transform.position + Vector3.left * 0.3f, transform.rotation);
-            GameObject bulletR = Instantiate(bulletObjB, transform.position + Vector3.right * 0.3f, transform.rotation);
+            GameObject bulletL = objectManager.MakeObj("EnemyBulletB");
+            bulletL.transform.position = transform.position + Vector3.left * 0.3f;
+            GameObject bulletR = objectManager.MakeObj("EnemyBulletB");
+            bulletR.transform.position = transform.position + Vector3.right * 0.3f;
 
             Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
             Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
@@ -90,16 +112,19 @@ public class RE_Enemy : MonoBehaviour
                 Debug.Log("NoDrop");
             }
             else if(ran < 5){
-                Instantiate(itemCoin, transform.position, itemCoin.transform.rotation);
+                GameObject ItemCoin = objectManager.MakeObj("ItemCoin");
+                ItemCoin.transform.position = transform.position;
             }
             else if(ran < 8){
-                Instantiate(itemPower, transform.position, itemPower.transform.rotation);
+                GameObject ItemPower = objectManager.MakeObj("ItemPower");
+                ItemPower.transform.position = transform.position;
             }
             else if(ran < 10){
-                Instantiate(itemBoom, transform.position, itemBoom.transform.rotation);
+                GameObject ItemBoom = objectManager.MakeObj("ItemBoom");
+                ItemBoom.transform.position = transform.position;
             }
 
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 
@@ -110,15 +135,16 @@ public class RE_Enemy : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.tag == "BoarderBullet")
+        if(other.gameObject.tag == "BoarderBullet")
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
+            transform.rotation = Quaternion.identity;
         }
         else if(other.gameObject.tag == "PlayerBullet")
         {
             RE_Bullet bullet = other.gameObject.GetComponent<RE_Bullet>();
             Onhit(bullet.dmg);
-            Destroy(other.gameObject);
+            other.gameObject.SetActive(false);
         }
     }
 }
