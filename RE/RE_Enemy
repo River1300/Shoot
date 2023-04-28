@@ -11,10 +11,14 @@ public class RE_Enemy : MonoBehaviour
     public GameObject itemPower;
     public GameObject itemBoom;
 
+    public RE_GameManager gameManager;
     public RE_ObjectManager objectManager;
 
     public int health;
     public int enemyScore;
+    public int patternIndex;
+    public int curPatternCount;
+    public int[] maxPatternCount;
 
     public string enemyName;
 
@@ -25,10 +29,14 @@ public class RE_Enemy : MonoBehaviour
     public Sprite[] sprite;
 
     SpriteRenderer spriteRenderer;
+    Animator anim;
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if(enemyName == "B")
+            anim = GetComponent<Animator>();
     }
 
     void OnEnable()
@@ -44,11 +52,153 @@ public class RE_Enemy : MonoBehaviour
             case "L":
                 health = 10;
                 break;
+            case "B":
+                health = 150;
+                Invoke("StopMove", 2);
+                break;
         }
+    }
+
+    void StopMove()
+    {
+        if(!gameObject.activeSelf) return;
+
+        Rigidbody2D rigid = GetComponent<Rigidbody2D>();
+        rigid.velocity = Vector2.zero;
+
+        Invoke("Think", 2);
+    }
+
+    void Think()
+    {
+        if(!gameObject.activeSelf) return;
+
+        patternIndex = (patternIndex == 3) ? 0 : patternIndex + 1;
+        curPatternCount = 0;
+
+        switch(patternIndex)
+        {
+            case 0:
+                FireForward();
+                break;
+            case 1:
+                FireShot();
+                break;
+            case 2:
+                FireArc();
+                break;
+            case 3:
+                FireAround();
+                break;
+        }
+    }
+
+    void FireForward()
+    {
+        GameObject bulletL = objectManager.MakeObj("BossBulletA");
+        bulletL.transform.position = transform.position + Vector3.left * 0.3f;
+        GameObject bulletLL = objectManager.MakeObj("BossBulletA");
+        bulletLL.transform.position = transform.position + Vector3.left * 0.45f;
+        GameObject bulletR = objectManager.MakeObj("BossBulletA");
+        bulletR.transform.position = transform.position + Vector3.right * 0.3f;
+        GameObject bulletRR = objectManager.MakeObj("BossBulletA");
+        bulletRR.transform.position = transform.position + Vector3.right * 0.45f;
+
+        Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidLL = bulletLL.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
+        Rigidbody2D rigidRR = bulletRR.GetComponent<Rigidbody2D>();
+
+        rigidL.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidLL.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidR.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+        rigidRR.AddForce(Vector2.down * 6, ForceMode2D.Impulse);
+
+        if(!gameObject.activeSelf) return;
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireForward", 2);
+        else
+            Invoke("Think", 3);
+    }
+    void FireShot()
+    {
+        for(int i = 0; i < 5; i++)
+        {
+            GameObject bullet = objectManager.MakeObj("EnemyBulletB");
+            bullet.transform.position = transform.position;
+
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+            Vector2 dirVec = player.transform.position - transform.position;
+
+            Vector2 ranVec = new Vector2(Random.Range(-0.5f, 0.5f), Random.Range(0f, 2f));
+            dirVec += ranVec;
+            rigid.AddForce(dirVec.normalized * 3, ForceMode2D.Impulse);
+        }
+
+        if(!gameObject.activeSelf) return;
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireShot", 3.5f);
+        else
+            Invoke("Think", 3);
+    }
+    void FireArc()
+    {
+        GameObject bullet = objectManager.MakeObj("EnemyBulletA");
+        bullet.transform.position = transform.position;
+        bullet.transform.rotation = Quaternion.identity;
+
+        Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+
+        Vector2 dirVec = new Vector2(Mathf.Cos(Mathf.PI * 15 * curPatternCount / maxPatternCount[patternIndex]), -1f);
+        rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
+
+        if(!gameObject.activeSelf) return;
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireArc", 0.15f);
+        else
+            Invoke("Think", 3);
+    }
+    void FireAround()
+    {
+        int roundNumA = 30;
+        int roundNumB = 40;
+        int roundNum = (curPatternCount % 2 == 0) ? roundNumA : roundNumB;
+
+        for(int index = 0; index < roundNum; index++)
+        {
+            GameObject bullet = objectManager.MakeObj("BossBulletB");
+            bullet.transform.position = transform.position;
+            bullet.transform.rotation = Quaternion.identity;
+
+            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
+            Vector2 dirVec = new Vector2(Mathf.Cos(Mathf.PI * 2 * index / roundNum), Mathf.Sin(Mathf.PI * 2 * index / roundNum));
+            rigid.AddForce(dirVec.normalized * 5, ForceMode2D.Impulse);
+
+            Vector3 rotVec = Vector3.forward * 360 * index / roundNum + Vector3.forward * 90;
+            bullet.transform.Rotate(rotVec);
+        }
+
+        if(!gameObject.activeSelf) return;
+
+        curPatternCount++;
+        if(curPatternCount < maxPatternCount[patternIndex])
+            Invoke("FireAround", 0.7f);
+        else
+            Invoke("Think", 3);
     }
 
     void Update()
     {   
+        if(enemyName == "B")
+            return;
+
         Fire();
         Reload();
     }
@@ -98,15 +248,24 @@ public class RE_Enemy : MonoBehaviour
 
         health -= dmg;
 
-        spriteRenderer.sprite = sprite[1];
-        Invoke("ReturnSprite", 0.2f);
+        if(enemyName == "B")
+        {
+            anim.SetTrigger("OnHit");
+        }
+        else
+        {
+            spriteRenderer.sprite = sprite[1];
+            Invoke("ReturnSprite", 0.2f);
+        }
 
         if(health < 0)
         {
             Player playerLogic = player.GetComponent<Player>();
             playerLogic.score += enemyScore;
 
-            int ran = Random.Range(0, 11);
+            gameManager.CallExplosion(transform.position, enemyName);
+
+            int ran = (enemyName == "B") ? 0 : Random.Range(0, 11);
 
             if(ran < 3){
                 Debug.Log("NoDrop");
@@ -124,6 +283,9 @@ public class RE_Enemy : MonoBehaviour
                 ItemBoom.transform.position = transform.position;
             }
 
+            if(enemyName == "B")
+                gameManager.StageEnd();
+
             gameObject.SetActive(false);
         }
     }
@@ -135,7 +297,7 @@ public class RE_Enemy : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.gameObject.tag == "BoarderBullet")
+        if(other.gameObject.tag == "BoarderBullet" && enemyName != "B")
         {
             gameObject.SetActive(false);
             transform.rotation = Quaternion.identity;

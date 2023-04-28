@@ -15,6 +15,7 @@ public class RE_GameManager : MonoBehaviour
     public Transform[] spawnPoints;
 
     public int spawnIndex;
+    public int stage;
 
     public float maxSpawnDelay;
     public float curSpawnDelay;
@@ -27,12 +28,44 @@ public class RE_GameManager : MonoBehaviour
 
     public RE_ObjectManager objectManager;
 
+    public Animator startAnim;
+    public Animator endAnim;
+    public Animator fadeAnim;
+    public Transform playerPos;
+
     void Awake()
     {
         spawnList = new List<RE_Spawn>();
-        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL"};
+        enemyObjs = new string[] {"EnemyS", "EnemyM", "EnemyL", "EnemyB"};
+
+        StartStage();
+    }
+
+    public void StartStage()
+    {
+        startAnim.SetTrigger("On");
+
+        startAnim.GetComponent<Text>().text = "Stage " + stage + "\nStart";
+        endAnim.GetComponent<Text>().text = "Stage " + stage + "\nEnd";
 
         ReadSpawnFile();
+
+        fadeAnim.SetTrigger("In");
+    }
+    public void StageEnd()
+    {
+        endAnim.SetTrigger("On");
+
+        stage++;
+
+        fadeAnim.SetTrigger("Out");
+
+        player.transform.position = playerPos.position;
+
+        if(stage > 2)
+            Invoke("GameOver", 3);
+        else
+            Invoke("StartStage", 5);
     }
 
     void ReadSpawnFile()
@@ -41,7 +74,7 @@ public class RE_GameManager : MonoBehaviour
         spawnEnd = false;
         spawnIndex = 0;
 
-        TextAsset textFile = Resources.Load("Stage 1") as TextAsset;
+        TextAsset textFile = Resources.Load("Stage " + stage) as TextAsset;
         StringReader stringReader = new StringReader(textFile.text);
 
         while(stringReader != null)
@@ -80,6 +113,9 @@ public class RE_GameManager : MonoBehaviour
 
         switch(spawnList[spawnIndex].type)
         {
+            case "B":
+                enemyIndex = 3;
+                break;
             case "S":
                 enemyIndex = 0;
                 break;
@@ -100,6 +136,7 @@ public class RE_GameManager : MonoBehaviour
 
         enemyLogic.player = player;
         enemyLogic.objectManager = objectManager;
+        enemyLogic.gameManager = this;
 
         if(ranPoint == 5 || ranPoint == 6)
         {
@@ -160,6 +197,15 @@ public class RE_GameManager : MonoBehaviour
 
         RE_Player playerLogic = player.GetComponent<RE_Player>();
         playerLogic.isHit = false;
+    }
+
+    public void CallExplosion(Vector3 pos, string type)
+    {
+        GameObject explosion = objectManager.MakeObj("Explosion");
+        Explosion explosionLogic = explosion.GetComponent<Explosion>();
+
+        explosion.transform.position = pos;
+        explosionLogic.StartExplosion(type);
     }
 
     public void GameOver()

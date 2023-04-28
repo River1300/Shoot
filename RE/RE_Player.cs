@@ -7,6 +7,7 @@ public class RE_Player : MonoBehaviour
     public GameObject bulletObjA;
     public GameObject bulletObjB;
     public GameObject boomEffect;
+    public GameObject[] followerObject;
 
     public RE_GameManager manager;
     public RE_ObjectManager objectManager;
@@ -28,17 +29,69 @@ public class RE_Player : MonoBehaviour
     public bool isTouchRight;
     public bool isHit;
     public bool isBoomTime;
+    public bool isRespawnTime;
+    public bool isControl;
+    public bool isButtonA;
+    public bool isButtonB;
+    public bool[] joyControl;
 
     Animator anim;
+    SpriteRenderer spriteRenderer;
 
     void Awake()
     {
         anim = GetComponent<Animator>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    void OnEnable()
+    {
+        Unbeatable();
+        Invoke("Unbeatable", 3);
+    }
+
+    void Unbeatable()
+    {
+        isRespawnTime = !isRespawnTime;
+
+        if(isRespawnTime)
+        {
+            spriteRenderer.color = new Color(1, 1, 1, 0.5f);
+
+            for(int i = 0; i < followerObject.Length; i++)
+            {
+                followerObject[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.5f);
+            }
+        }
+        else
+        {
+            spriteRenderer.color = new Color(1, 1, 1, 1);
+            for(int i = 0; i < followerObject.Length; i++)
+            {
+                followerObject[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
+            }
+        }
+    }
+
+    public void JoyPanel(int type)
+    {
+        for(int index = 0; index < 9; index++)
+        {
+            joyControl[index] = (index == type);
+        }
+    }
+    public void JoyDown()
+    {
+        isControl = true;
+    }
+    public void JoyUp()
+    {
+        isControl = false;
     }
 
     void Boom()
     {
-        if(!Input.GetButton("Fire2") || isBoomTime || boom == 0) return;
+        if(!isButtonB || isBoomTime || boom == 0) return;
         boom--;
         isBoomTime = true;
 
@@ -111,8 +164,18 @@ public class RE_Player : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
-        if ((h == -1 && isTouchLeft) || (h == 1 && isTouchRight)) h = 0;
-        if ((v == 1 && isTouchTop) || (v == -1 && isTouchBottom)) v = 0;
+        if(joyControl[0]) { h = -1; v = 1; }
+        if(joyControl[1]) { h = 0; v = 1; }
+        if(joyControl[2]) { h = 1; v = 1; }
+        if(joyControl[3]) { h = -1; v = 0; }
+        if(joyControl[4]) { h = 0; v = 0; }
+        if(joyControl[5]) { h = 1; v = 0; }
+        if(joyControl[6]) { h = -1; v = -1; }
+        if(joyControl[7]) { h = 0; v = -1; }
+        if(joyControl[8]) { h = 1; v = -1; }
+
+        if((h == 1 && isTouchRight) || (h == -1 && isTouchLeft) || !isControl) h = 0;
+        if((v == 1 && isTouchTop) || (v == -1 && isTouchBottom) || !isControl) v = 0;
 
         Vector3 curPos = transform.position;
         Vector3 nextPos = new Vector3(h, v, 0) * speed * Time.deltaTime;
@@ -122,9 +185,27 @@ public class RE_Player : MonoBehaviour
         if(Input.GetButtonDown("Horizontal") || Input.GetButtonUp("Horizontal")) anim.SetInteger("Input", (int)h);
     }
 
+    public void ButtonADown()
+    {
+        isButtonA = true;
+    }
+
+    public void ButtonAUp()
+    {
+        isButtonA = false;
+    }
+
+    public void ButtonBDown()
+    {
+        isButtonB = true;
+    }
+
     void Fire()
     {
         if(!Input.GetButton("Fire1")) return;
+
+        if(!isButtonA) return;
+
         if(curShotDelay < maxShotDelay) return;
 
         switch(power)
@@ -147,7 +228,7 @@ public class RE_Player : MonoBehaviour
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
-            case 3:
+            default:
                 GameObject bulletLL = objectManager.MakeObj("PlayerBulletA");
                 bulletLL.transform.position = transform.position + Vector3.left * 0.35f;
                 GameObject bulletCC = objectManager.MakeObj("PlayerBulletB");
@@ -169,6 +250,16 @@ public class RE_Player : MonoBehaviour
     void Reload()
     {
         curShotDelay += Time.deltaTime;
+    }
+
+    void AddFollower()
+    {
+        if(power == 4)
+            followerObject[0].SetActive(true);
+        else if(power == 5)
+            followerObject[1].SetActive(true);
+        else if(power == 6)
+            followerObject[2].SetActive(true);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -193,11 +284,15 @@ public class RE_Player : MonoBehaviour
         }
         else if(other.gameObject.tag == "Enemy" || other.gameObject.tag == "EnemyBullet")
         {
+            if(isRespawnTime) return;
+
             if(isHit) return;
             isHit = true;
 
             life--;
             manager.UpdateLifeIcon(life);
+
+            manager.CallExplosion(transform.position, "P");
 
             if(life < 0)
             {
@@ -222,8 +317,11 @@ public class RE_Player : MonoBehaviour
                 case "Power":
                     if(power > maxPower)
                         score += 50;
-                    else   
+                    else
+                    {
                         power++;
+                        AddFollower();
+                    }
                     break;
                 case "Boom":
                     if(boom > maxBoom)
